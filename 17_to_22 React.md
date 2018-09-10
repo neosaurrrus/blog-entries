@@ -1052,6 +1052,13 @@ Now that we have gone through one way of adding and retriving from state, in my 
 
 
 
+
+
+
+
+
+
+
 CHAPTER 24 - Adding more things to state and Displaying 
 
 This is part 8 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we:
