@@ -2,7 +2,7 @@
 
 # Introducting React Concepts
 
-After playing around with with a RESTful application, I decided it was time to learn a different way of doing things. Enter `React` which you might have heard about. 
+After playing around with with a RESTful application, I decided it was time to learn a different way of doing things. Enter `React` which you might have heard about.
 
 I have been learning from various sources the main ones are:
 
@@ -285,13 +285,7 @@ It's the Circle of State, you can add your own Lion King GIF here.
 So that's the first key concepts of React, we will talk about them some more and encounter new ones as we go into using them in anger.
 
 
-
-
-
-
-
 ------- Chapter 18 -----
-
 
 In our last post I just talked about React and some of the concepts behind it. Going forward, I will be working on [React For Beginners by Wes Bos](www.reactforbeginners.com) highlighting the key things I learnt on the way. Highly recommended.
 
@@ -327,7 +321,6 @@ There is alot of "just go with it" at this stage. Hopefully we can make sense of
 # Steps to make our first component
 
 You can use index.js to write our components as long as we reemmber to refactor it out to its own file afterwards.
-
 
 1. We import React (`import React from 'react'`)
 2. We make a class based StorePicker component
@@ -407,13 +400,11 @@ class StorePicker extends React.Component {
 }
 ```
 
-
 ## Styling for our first component
 
 Styling components is quite an in-depth topic. We could add a link to a stylesheet on the index.html.
 
 *Componentised CSS* involves importing CSS that relates to a component so it is seperated. There is some debate on this but for now we can go a middle way and import CSS on the Index.js:
-
 
 `import './css/style.css'
 
@@ -819,9 +810,29 @@ Note how fast it is, react router just needs to swap out the component, and does
 
 
 
-CHAPTER 22, Understanding State!
 
-This is part 5 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we explored:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER 22, Understanding State using Forms!
+
+This is part 6 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we explored:
 
 - Events
 - Binding Methods
@@ -847,8 +858,8 @@ The process for adding things to state can be broken down into a few steps:
 
 This is essentially a recap of our work in using references in my previous post.
 
-1. The form we build should be a component for easy reuse. So make a component for the form we make. You can copy an existing component and tweak. Remember to export it, and import and add the form to the component(s) that require it.
-2. The component will return a form, build that according the data you wish to capture. Dont forget a button to submit! Some example fields are:
+1. The form we build should be a component for easy reuse so lets do that. You can copy an existing component and tweak. Remember to export it, and import and add the form to the component(s) that require it.
+2. The component will return a form, build that according the data you wish to capture. Don't forget a button to submit! Some example fields are:
     - name
     - price
     - status
@@ -928,11 +939,11 @@ And there you go, the data in the submitted form should appear in the App.js Sta
 
 Once submitted, since the page doesnt refresh, you can reset the form doing `event.currentTarget.reset()`
 
-There are quite a few steps in updating a central state from an individual component but by breaking the job into small pieces you can avoid panicing:
+There are quite a few steps in updating a central state from an individual form component but by breaking the job into small pieces you can avoid panic:
 
-1. The App component has a state object created.
-2. The App component has a method created that updates a part of its state with a given input
-3. A Form component is created to get the data with which to update state with.
+1. The App component needs a state object created.
+2. The App component needs a method created that updates a part of its state with a given input.
+3. A form component is created to get the data with which to update state with.
 4. The inputs are given refs which are set up in the component.
 5. The User fills out inputs and clicks submit button.
 6. The submission triggers the onSubmit event which calls a property on the component
@@ -947,22 +958,32 @@ Just take each little bit at a time and you'll be fine. Of course it doesn't jus
 
 
 
+
+
 CHAPTER 23 - Displaying our State.
 
-This is part 6 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we explored:
+This is part 7 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we explored:
 
 - Setting up a State Object
 - Building a form with refs that submits data we wanted to put into State
 - Created a method in the App component that updated the State
 - Passed the method down via Props to allow the submission function to use it.
 
-In the previous chapter we looked at how to get data from an input into the State. So let's look at the opposite, From the State to our Eyeballs.
+In the previous chapter we looked at how to get data from an input into the State. We probably want to display that somewhere so lets get the data from State to our Eyeballs.
+
+This follows these basic steps.
+
+1. Build a component which will be a template to display our data
+2. Set up a loop to make multiple components for each entry in an object or array.
+3. Add a unique key for each entry to ensure React can reference it correctly.
+4. Use props to pass data from the state to the display component
+5. Use the props in the display component to populate the render method.
 
 # The setup example
 
-Let's assume we have an object in our state which is called `profiles` and contains user profiles called `user321` or someother unique id. We want to show all of them on a page.
+Let's assume we have an object in our state which is called `profiles` and contains user profiles *objects* called `user321` or someother unique id. We want to show all of them on a page.
 
-# Building the list component
+# Building the component with placeholder data
 
 Displaying a bunch of profiles sounds like a job for multiple Divs but we should be smarter than just building them on the original page. We should build a component for the profiles each containing a div, makes it nice and reusable.
 
@@ -974,11 +995,11 @@ In the render method we can return a div for each profile, lets do that with jus
 
 # Looping through our Profiles Object
 
-Remember to Import the component.
+Remember to Import the component. I forget that a lot.
 
-Add a profile tag: `<Profile/>` and we should see our profile placeholder. 
+Beore we get into loops, Its a good idea to add a profile tag: `<Profile/>` and we should see our profile placeholder if all goes well.
  
-However we want to render out each Profile. Normally we would just loop through our Profiles Object and render out each one, JSX does not have any native logic capability so we can use JS.
+Now we need to loop through our Profiles Object and render out each one, JSX does not have any native logic capability so we can use JS.
 
 As it is an object we don't get to use the Array helpers of ES6 normally but we can use `Object.keys(this.state.profiles)` which makes an array of the keys.
 
@@ -992,15 +1013,18 @@ However you will probably notice an error in the console...
 
 `Each child in an array or iterator should have a unique 'key' prop.`
 
-React wants each element to be uniquely identifiable, this helps it be very performant as it uses the key to find things quick. As our keys are unique, we can add a key property to each `Profile` tag like so `<Profile key={key}/>`
+React wants each element to be uniquely identifiable, this helps it be very performant as it uses the key to find things quick. As our keys are unique, we can add a key property to each `Profile` tag like so `<Profile key={key}/>` 
+
+This need for unique names is something to be considered when constructing our objects.
 
 # Passing data from State to the Profile component
 
-Now we have a component rendering for each object we need that component to use information from the state. To do this we use.... yup, props. So that profile component now looks like this: `<Profile key={key} details={this.state.profiles[key]}/>`. The *details* tag is an abitary one, we can choose anything as long as we are consistant.
+Now we have a component rendering for each object, we need that component to use information from the State. To do this we use.... yup, **props**. So that profile component now looks like this: `<Profile key={key} details={this.state.profiles[key]}/>`. The *details* tag is an abitary one, we can choose anything as long as we are consistant.
 
 That will make each component have a prop called `details` where all the information from the object lives. From there we can populate the render method of the Profile component with whatever we would like. There are some gotchas though with JSX:
 
-To show img is you lose the quotes: `<img src={this.props.details.image}>` same goes for the alt property.
+To use the **img** tag you lose the quotes: `<img src={this.props.details.image}>` 
+Same goes for the **alt** property.
 
 Otherwise its just a case of populating the template with the props. A pro tip is to create a variable or two as `this.props.details.xxxx` is quite long thing to type each time!
 
@@ -1013,7 +1037,7 @@ Or we can be extra smart and use destructuring:
 
 # Conclusion
 
-The process for placing state content into a component that renders it is pretty much using props, however we need to make sure when we loop through items we do it in a way that allows React to see it as unique. Nothing too taxing, but obviously there is alot of different scenarios this could apply to. But here is what we did:
+The process for placing state content into a component that renders it is pretty much all about props, however we need to make sure when we loop through items we do it in a way that allows React to see it as unique. Nothing too taxing, but obviously there is alot of different scenarios this could apply to. But here is what we did:
 
 1. Build the component
 2. In the containing component, map through the Object.Keys if its an object to make multiple components
@@ -1028,13 +1052,9 @@ Now that we have gone through one way of adding and retriving from state, in my 
 
 
 
-
-
-
-
 CHAPTER 24 - Adding more things to state and Displaying 
 
-This is part 7 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we:
+This is part 8 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we:
 
 - Build a component to display data
 - In the containing component, map through the Object.Keys if its an object to make multiple components
