@@ -1063,8 +1063,8 @@ CHAPTER 24 - Adding more things to state and Displaying
 
 This is part 8 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we:
 
-- Build a component to display data
-- In the containing component, map through the Object.Keys if its an object to make multiple components
+- Built a component to display data
+- In the containing component, mapped through the array (Object.Keys if its an object) to make multiple components
 - Gave each component a unique key.
 - Passed in State data via props
 - Populate the component's render method with whatever data you want to give it.
@@ -1271,7 +1271,6 @@ Then go to [firebase.google.com](firebase.google.com) and select Add Project.
 Give it a unique name and then create it, which will take abotu 30 seconds.
 
 You will be presented with a landing page wit all sorts of toys, Analytics, Authentication, etc. That is quite a few blog posts worth but for now, lets go see about a Database... by clicking Database.
-
 
 **Choosing a Database**
 At time of writing there is Real-time Database and a beta Cloud Firestore as database options. Let's go with `Real-time Database` as we dont need anything fancy right now.
@@ -1747,7 +1746,7 @@ This is just scratching the surface of proptypes. One useful proptye is `shape`.
 
 We can always look at the React documentation to see all the other ways we can use proptypes.
 
-One additional caveat is that when we eject into production we wotn have them as they are primarily a development tool.
+One additional caveat is that when we eject into production we wont have them as they are a development tool.
 
 
 
@@ -1766,16 +1765,17 @@ In our app we have:
 
 In a real-life app, we might want to restrict the Inventory to an owner. This is what we are going to do in this post using Firebase Authentication to use Github, Twitter and Facebook login.
 
-The process consists of the following main steps.
+The process consists of the following parts.
 
 1. Set up Authentication Providers with Firebase
-2. Produce our login handling code.
-3. Implement our login code with the Inventory component to hide or show the relevent component.
-4. Implement Firebase rules to effectively lock it down
+2. Produce our login handling component and Build an `authenticate` method to request authentication from the relevent signin provider
+3. Build an 'authhandler` method to do stuff once we have the results from the authenticate method.
+4. Set up logic within the Inventory component to display relevent component
+5. Implement Firebase rules to effectively lock it down in the backend.
 
 So lets get started...
 
-# Setting up our Authentication Providers
+# Part 1 - Setting up our Authentication Providers
 
 This section is all about setting things on the backend, in our case the back-end is actually Firebase and the services we want to authenticate with.
 
@@ -1808,79 +1808,109 @@ For each sign in provider there is two main steps:
 
 ## Github Authentication
 
-This is very similar to the twitter process
+This is fairly straightforward:
 
 1. Follow steps 1-3 as before but this time select Github.
 2. This time the url is [github.com/settings/applications/new]
-
 3. Register a new OAuth application, and paste the Authorization callback URL from firebase
-
 4. The Client Id and Client Secret will be now availiable to add to Firebase.
 
+As you can see its a fairly similar process for most sign in providers once you navigate through thier various developer sites.
 
-As you can see its a fairly similar process for most sign in providers.
+# Part 2 - Login Component and Authentication Method
 
-# Creating our Auth handler
+The first half of the proces is setting up the app to send a sign in request 
 
-Now we have Firebase ready to use a sign-in provider we need to provide the code to hook up with it.
+Now we have Firebase ready to use a sign-in provider we need to provide the code to use it on a login page of some sort.
 
 The steps to do this are:
 
-1. Set up Login Component
-2. Configure Inventory Component to react accordingly.
+1. Set up a test Login Component
+2. Configure the parent Inventory Component and create an authentication method
+3. Pass the authentication method to the login via props
+4. Configure the login component to use the authentication method.
 
-## Set up Login Component
+In the second part we will look at what we do once we have attempted authentication.
 
-The login component will exist to render some buttons to allow sign in to various providers. As it will do little else we can just make it a *staleless functional component*. 
+## Setting up and Testing the Login Component
 
-The button will call a  method called autheticate we will wrtie in a second, as a parameter we will take the name of the provider with a capital letter. This will be useful later.
+The login component will exist to render some buttons to allow sign in to various providers. As it will do little else we can just make it a *stateless functional component*.
+
+Lets just keep it simple to test it works:
 
 ```js
-const login = props => {
-button onClick{()=> props.authenticate('Github')}
-}
+import React from 'react'
+const Login = props => (
+    <button>Github Login</button>
+);
+export default Login;
 ```
 
-Note that we ceference props by passing the parameter through as opposed to using `this`
-Don't forget to add the PropTypes.
+In our Inventory component let's see if we can get the login to render by first importing our Login component:
+
+`import Login from "./Login"`
+
+And then insert another return at the start of the render method, effectively redirecting the Inventory component to display the login component only for now:
+
+`return <Login />`
+
+Once we are happy nothing dumb will stop this from working lets delve into the methods we need on the button.
+
+## Making the button do something...almost
+
+When we want to click on the button, we want it to begin the authentication process for the signin provider we want. For the rest of this post, ill focus on getting Github signin working and trust you can logic out doing the same for other sign-in providers. 
+
+So let's change our button in the login component to:
+
+1. Call a method in props called authenticate. This doesnt exist but it will soon. 
+2. *Assuming we will have more than one type of sign in button*... as a parameter for this method we will take the name of the provider with a capital letter. Why a capital? I'll explain that too in a bit, I promise.
+
+Now our Github sign-in button in the Login component looks like this:
+
+`<button onClick={() => props.authenticate('Github')}> Sign in with GitHub </button>`
+
+Note in a functional component, we reference props by passing the parameter through as opposed to using `this`
+
+Also, don't forget to add the PropTypes, something like:
+
+`Login.propTypes = { authenticate: Proptypes.func.isRequired}` 
 
 ## Building the Authenticate method
 
-As it doesnt involve state at the top level we can write this on the Inventory component level which otherwise is deciding if the login component needs to be shown.
+As authentication doesnt involve state at the top level we can write the authentication method at the Inventory component level which otherwise is deciding if the login component needs to be shown.
 
-First, make sure to import Firebase else little will happen: 
+First, make sure to import Firebase else little will happen, Firebase has the methods we need to make this easy:
 
 `import firebase from 'firebase'`;
 
+We also need to refer our base compononent (SEE THE DATA PERSISTANCE POST)
 
-1. We pass in the value from the button as `Provider` so we can make one auth provider. This is a clever way of pointing it to the authprovider we clicked the button for.
+`import {firebaseApp} from '../base'`
 
-2. We use firebase's methods to produce a popup that uses the auth provider specified to prompt for login as per each service.
+1. For the method we pass in the value from the button as `Provider` (i.e "Github"). This is a clever way of checking the signup provider
+2. We specify our auth provider
+3. We use firebase's methods to produce a popup that uses the auth provider specified to prompt for iign in
 
 The code looks something like this:
 
 ```js
 authenticate = provider => {
     const authProvider = new firebase.auth[`${provider}AuthProvider`]();
-    firebaseApp
-    .auth()
-    .signInWithPopUp(authProvider)
-    .then(this.authHandler)
+    firebaseApp.auth().signInWithPopup(authProvider).then(this.authHandler)
 }
-
 ```
 
-## Building the Auth Handler method
+# Part 3 - Handling the authentication response
 
-The last line of that code snippet calls a authHandler which is about what our app does once the authentication data is returned.
+The last line of that code snippet calls `authHandler` which is all about what our app does once the authentication data is returned.
 
-Here we want to do three things:
+On our case, authhandler needs to do three things:
 
 - Look up the current store in the firebase DB
 - Claim it as current user if there is no owner
 - Set the state of the inventory component to reflect the current user
 
-**1. Look up the current store in the firebase database**
+## Look up the current store in the firebase database
 
 We need to look up the current store and see if there is an owner, to do that we need to look at our database so import base from our base component:
 
@@ -1898,7 +1928,7 @@ So the finished command looks like this:
 
 `const store = await base.fetch(this.props.match.params.storeId, {context: this})`
 
-**2. Claim ownership if no current owner**
+## 2. Claim ownership if no current owner
 
 First we need to check if there is an owner, if not we save the owner information to the firebase DB. 
 
@@ -1908,7 +1938,7 @@ if(!store.owner){
 }
 ```
 
-**3. Set the state of the inventory component to reflect the current user**
+## 3. Set the state of the inventory component to reflect the current user
 
 To work out what to do when a user logs in we need to know two things:
 
@@ -1949,7 +1979,7 @@ authHandler = async authData {
 }
 ```
 
-# Displaying the right content
+# Part 4 - Displaying the right content
 
 The render method will need some logic to check the following scenarios:
 
@@ -1961,27 +1991,27 @@ We also want to make a logout button to allow a different login if need be.
 
 Lastly we don't want to logon each time we refresh the page so we want to recheck the current user automatically.
 
-## If NOT Logged In##
+## If NOT Logged In 
 The uid contained within State determines if they are logged on so we just need to return the login component if there isnt a uid availible.:
 
 `if (!state.uid) {return <Login authenticate={this.authenticate} />}`
 
-## Logged in but NOT the owner##
+## Logged in but NOT the owner
 Easy enough, we need to compare the uid in state with the owner in state:
 
 `if (this.state.uid !== this.state.owner){return <div>You are not the owner</div>}`
 
-## Logged in as the owner##
+## Logged in as the owner
 If they pass the first two tests we know they are the owner and can return the component as normal.
 
-## Making the login button ##
+## Making the login button
 Ideally this should be a component but for the sake of brevity we wil define a JSX variable inside the render method:
 
 `const logout = <button onClick={this.logout}>Log Out</button>`
 
 We can then place the button on the 'not owner' and 'owner' return paths
 
-**The Logout Method**
+## The Logout Method
 The button calls a method which doesnt exist so we should sort that out, there is two taks to do udring logout:
 
 1. Signout of the auth provider
@@ -1995,9 +2025,10 @@ logout = async () => {
     this.setState({uid:null})
 }
 ```
-## Rechecking we are logged in ##
 
-When we refresh the page it would be good if it can check to see if we are logged in to avoid the login propt. We just need to use the `componentDidMount` lifecycle method to:
+## Rechecking we are logged in
+
+When we refresh the page it would be good if it can check to see if we are logged in to avoid the login prompt. We just need to use the `componentDidMount` lifecycle method to:
 
 1. Get Firebase to check if there is a user
 2. Pass that user to our authHandler method
@@ -2012,7 +2043,7 @@ componentDidMount(){
 }
 ```
 
-# Securing the Firebase Backend
+# Part 5 - Securing the Firebase Backend
 
 All that we have done so far is secured the client side, a determined person can still access and change the information in Firebase as we have left it open for anyone to read anad write.
 
