@@ -1904,11 +1904,19 @@ authenticate = provider => {
 
 The last line of that code snippet calls `authHandler` which is all about what our app does once the authentication data is returned.
 
-On our case, authhandler needs to do three things:
+```js
+authHandler = async authData => {
+    console.log(authData);
+  } 
+```
+
+If all went went so far. You now should be able to sign into github and see an object returned to the console.
+
+On our use case, authhandler needs to do three things:
 
 - Look up the current store in the firebase DB
 - Claim it as current user if there is no owner
-- Set the state of the inventory component to reflect the current user
+- Set the state of the inventory component to reflect the current user so it now knows who is logged in.
 
 ## Look up the current store in the firebase database
 
@@ -1916,27 +1924,35 @@ We need to look up the current store and see if there is an owner, to do that we
 
 `import base, {firebaseApp} from '.../base'`
 
-Then we need to fetch details about the current store:
+Then we need to fetch details about the current store. But **wait**, we first need the Inventory component to know the storeid which we can get from the parent App component (which itself is getting it from React Router):
 
-`const store = await base.fetch(STORE)`
+`storeId ={this.props.match.query.storeId}`
+
+So back in our authHandler method in the Inventory component:
+
+`const store = await base.fetch( *STORE GOES HERE* )`
 
 To get the store name we need to pass the prop from App:
 
 `storeId={this.props.match.params.storeId}`
 
-So the finished command looks like this:
+So the finished command in authhandler looks like this:
 
-`const store = await base.fetch(this.props.match.params.storeId, {context: this})`
+`const store = await base.fetch(this.props.storeId, {context: this})`
+
+If we don't use await here, store will be the promise as opposed to the result of the promise which is what we want.
 
 ## 2. Claim ownership if no current owner
 
-First we need to check if there is an owner, if not we save the owner information to the firebase DB. 
+Next we need to check if there is an owner, if not we save the owner information to the firebase DB.
 
 ```js
 if(!store.owner){
-    await base.post(`${this.props.storeId}/owner`, data: authData.user.uid)
+    await base.post(`${this.props.storeId}/owner`, {data: authData.user.uid})
 }
 ```
+
+At this point  we should be able to check in the Firebase DB if an owner is being set.
 
 ## 3. Set the state of the inventory component to reflect the current user
 
@@ -1958,7 +1974,7 @@ this.setState({
 As we dont need this information elsewhere we can set State locally to the Inventory Component as opposed to the parent root app. This requires setting up state on the component:
 
 ```js
-state {
+state = {
     uid: null,
     owner: null
 }
@@ -1971,7 +1987,7 @@ authHandler = async authData {
     if(!store.owner){
     await base.post(`${this.props.storeId}/owner`, data: authData.user.uid)
     }
-    const store = await base.fetch(this.props.match.params.storeId, {context: this})
+    const store = await base.fetch(this.props.storeId, {context: this})
     this.setState({
         uid: authData.user.uid,
         owner: store.owner || authData.user.uid
@@ -1979,20 +1995,23 @@ authHandler = async authData {
 }
 ```
 
+If everything has gone well you should be able to log on and see the new keys in Inventory's state and an owner value in the Firebase DB store.
+
 # Part 4 - Displaying the right content
 
-The render method will need some logic to check the following scenarios:
+The inventory render method will need some logic to check the following scenarios:
 
-- If they are NOT logged in - Show login component
-- Logged in and NOT the owner - Show "Do not have access message"
-- Logged in and IS the owner - Show the inventory Component
+- IF they are NOT logged in THEN Show login component
+- IF Logged in and NOT the owner THEN Show "Do not have access message"
+- IF Logged in AND the owner THEN Show the inventory Component
 
-We also want to make a logout button to allow a different login if need be.
+Aside from this, we also want to make a logout button to allow a different login if need be.
 
-Lastly we don't want to logon each time we refresh the page so we want to recheck the current user automatically.
+Lastly we don't want to logon each time we refresh the page so lets recheck the current user automatically.
 
-## If NOT Logged In 
-The uid contained within State determines if they are logged on so we just need to return the login component if there isnt a uid availible.:
+## If NOT Logged In
+
+The uid contained within State determines if they are logged on so we just need to return the login component if there isnt a uid availible:
 
 `if (!state.uid) {return <Login authenticate={this.authenticate} />}`
 
@@ -2001,10 +2020,12 @@ Easy enough, we need to compare the uid in state with the owner in state:
 
 `if (this.state.uid !== this.state.owner){return <div>You are not the owner</div>}`
 
+You will probably want to spruce that up with a better response than a plain div but it will do for now.
+
 ## Logged in as the owner
 If they pass the first two tests we know they are the owner and can return the component as normal.
 
-## Making the login button
+## The Logout button
 Ideally this should be a component but for the sake of brevity we wil define a JSX variable inside the render method:
 
 `const logout = <button onClick={this.logout}>Log Out</button>`
@@ -2012,9 +2033,10 @@ Ideally this should be a component but for the sake of brevity we wil define a J
 We can then place the button on the 'not owner' and 'owner' return paths
 
 ## The Logout Method
-The button calls a method which doesnt exist so we should sort that out, there is two taks to do udring logout:
 
-1. Signout of the auth provider
+The button calls a method which doesnt exist so we should sort that out, there is two tasks to do during logout:
+
+1. Sign out of the auth provider
 2. Clear the state of the current user details
 
 This can be done in a line each:
@@ -2076,9 +2098,16 @@ Instead we need to change this as follows:
 Lets explain that:
 
 1. Read access is allowed for everyone anywhere.
-2. A user can only write at the top layer (i.e where a store goes) if there is no current store
+2. A user can only write at the top layer (i.e where a store goes) if there is no current store (ie No data exists)
 3. Within a store ($room) write is only allowed if:
 
 - auth isnt null (the user is logged on)
 - Either, no data exists or the existing owner matches the current one
 
+# Conclusion
+
+I have written about authetiacation with Passport JS before. This, overall, seems a little more friendlier as firebase handles some of the heavy lifting. Plus using async and await avoids some of the callback hell I experienced before.
+
+Hopefully the above is enough to get the authentication ball rolling when it is needed. However I think some time with the Firebase docs when trying to use it would be a good idea.
+
+Breaking it down into small steps is definately the way to avoid losing your mind when it comes to authentication.
