@@ -673,10 +673,6 @@ In the next section we delve into Events and how things can change based upon us
 
 
 
-
-
-
-
 ChAPTER 21 - Events and Refs
 
 Events are how React functions when something happens, such as a button being clicked or a form being submitted. They are used quite a bit in JS, you might know that.
@@ -2094,6 +2090,7 @@ Instead we need to change this as follows:
         ".read": true
     }
 }
+```
 
 Lets explain that:
 
@@ -2111,3 +2108,119 @@ I have written about authetiacation with Passport JS before. This, overall, seem
 Hopefully the above is enough to get the authentication ball rolling when it is needed. However I think some time with the Firebase docs when trying to use it would be a good idea.
 
 Breaking it down into small steps is definately the way to avoid losing your mind when it comes to authentication.
+
+
+
+
+Chapter ....28??? - Building and Deploying a Create-React-App App
+
+In the React for Beginners series we have been using `create-react-app` to get ourselves up and running with React. However there comes a time where every fledgling app must leave the nest. This post covers how to productionise your app.
+
+The main steps are as follows:
+
+1. Run the Build Script to build our production ready app
+2. Configure and Deploy to a Hosting Provider
+
+And not quite needed but useful... how to eject from create-react-app so it is just a plain old react app which is more configurable for more advanced users.
+
+# Building our App for Production
+
+This process strips away any development specific features, compresses and optimises our application to a format that is ready to deploy into production.
+
+## Stop the App
+The first step is to stop the application from running if it currently is. Easy enough I hope.
+
+## Build Our App
+In our package.json file we have a script caled build we can run to magically make our build we run it with:
+
+`npm run build`
+
+This will take a few moments to run but you should end up with a new `build` folder in the root folder of your application.
+
+## The Build Folder
+
+We can explore the build folder and see what has happened. The main things are:
+
+- The folder structure of before, and node modules have been replaced by a more standardised one.
+- All the React code has been squished into one super efficient JS file
+- A source map file which helps devs navigate through it to the source files should errors occur
+- Some service workers have been set up, which can aid offline use but thats probably for a blog post next year!
+
+The build folder is almost a static site, what we want to put onto a server somehow. There is one catch: *the server needs to be made aware that any routing should redirect to the root so that the client, with React Router handles in on the page*
+
+# Deploying to Hosting Services
+
+Now that we have our app built for production, we need somewhere to put it. This section goes through the basic steps of deploying to some of the different hosting providers out there, bearing in mind the little catch we just mentioned...
+
+## Deploying to Now
+
+Now from Zeit software. This is a service you can use to easily bring sites up from your own server. We do need to tweak our app to use a package that will allow it to be served correctly on the Now service.
+
+1. Install Now via you command line - `npm i -g now` This will install the now command globally.
+2. Install serve into the app - `npm i serve` This is a package to let us serve it with the right options.
+3. In package.json rename the `Start` script to `Dev` - This is because we are making a new start command that uses serve.
+4. Make the new start script - `"start" : "serve --single ./build` This uses serve to run it as a single page application in the build folder.
+5. Run Now in the command line - `now` (you might need to register) to start deploying the site.
+
+This should now have your application up and running a temporary url. You can configure this somewhat, but I will leave that to the Now Documentation to explain. 
+
+## Deploying to Netlify
+
+Netlify is a relatively new kid on the block which I think is very easy to use and very highly recommended.
+
+1. Install the Netlify Command Line Tool globllly - `npm i netlify -g`
+2. Deploy using Netlify from the Root App folder - `netlify deploy`. Specify `build` as the current path to deploy.
+
+All done? Nope!
+
+ If we refresh the page it will break as it cannot handle the routing. To fix this we need to create a redirects file in the build folder that will configure the routing to act as a single page application. This info can be found in the Netlify docs.
+
+ 1. In the build folder create a file called `_redirects`
+ 2. Open it up and add the following: `/*   /index.html 200` which instructs netlify to always point to index.html with a 200 status code.
+ 3. Netlify deploy again from the Root App folder
+
+Netlify is now happily running the app. Probably
+
+## Deploying to Apache
+
+An apache server, such as GoDaddy is a possible destination for your react app. One main gotcha is that its highly recommended to deploy a React app as a subdomain rather than a folder else the routing gets screwed up.
+
+1. Upload the build files to the server via FTP, its a good idea to use the same folder name on both.
+
+And it will work right? Nope... you guessed it, the redirects will not work. To fix this on an Apache server  do the following:
+
+1. In the server's root app folder, make a file called `.htaccess`
+2. Open it up and add the following:
+
+    RewriteBase /
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L] 
+
+That basically forces itself to redirect back to index.html. A bit like the Netlify redirect but longer.
+
+It's not like you are going to remember the exact steps for every hosting method, but its important to appreciate the common things that can go wrong when its a single page application. If you have certain server type then you can just google your server/hosting type plus `single page app` and you should find a configuration that works.
+
+## Final Step - Sorting out Firebase
+
+To make authentication work fully regardless of which host you use, there is one thing left to do with Firebase
+
+Firebase needs to know what domains it is going to used from. So whatever domain is chosen we must tell Firebase that is the case.
+
+1. Go to [console.firebase.google.com]
+2. Go to the `Authentication` Section
+3. Under `availiable domains` enter your new domain
+
+Once you have done that, your React app should be up and running and ready to take on the world!
+
+# Ejecting from Create-React-App
+
+Finally, lets imagine a scenario where we need a little bit more control than Create-React-App allows. It allows us to strip away all the training wheels and show thing as they really are. I am definately not at the stage where this is helpful to me but for completeness this is what you do...
+
+
+
+
+# Final Conclusion
+
+thats the end of the series
