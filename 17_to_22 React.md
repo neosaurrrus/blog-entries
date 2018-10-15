@@ -310,7 +310,7 @@ There are also some package dependancies to install but a simple `npm install` w
 - react-router-dom, montiors changes and allows URLs
 - react-transition-group, provides sweet animations.
 
-We will go over them in more detail when we need to leverage them. There is also a scripts section which does some of the initial setting up for using Create-React-App. 
+We will go over them in more detail when we need to leverage them. There is also a scripts section which does some of the initial setting up for using Create-React-App.
 
     Tip: If the install goes wrong, its a good idea to delete the node modules folder.
 
@@ -352,8 +352,7 @@ And here is the StorePicker component so far:
 import React from 'react';
 class StorePicker extends React.Component {
     render(){
-        return <p>Hey</p>
-    }
+        return <p>Hey</p>    }
 }
 
 export default StorePicker;
@@ -670,9 +669,6 @@ We can also pass values from the parent component to the children via Props
 In the next section we delve into Events and how things can change based upon user input.
 
 
-
-
-
 ChAPTER 21 - Events and Refs
 
 Events are how React functions when something happens, such as a button being clicked or a form being submitted. They are used quite a bit in JS, you might know that.
@@ -954,8 +950,6 @@ Just take each little bit at a time and you'll be fine. Of course it doesn't jus
 
 
 
-
-
 CHAPTER 23 - Displaying our State.
 
 This is part 7 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com). Last time we explored:
@@ -965,7 +959,7 @@ This is part 7 of my React Learning series. Using knowledge gleaned from [Wes Bo
 - Created a method in the App component that updated the State
 - Passed the method down via Props to allow the submission function to use it.
 
-In the previous chapter we looked at how to get data from an input into the State. We probably want to display that somewhere so lets get the data from State to our Eyeballs.
+So in the last post te put things into state, lets look at how to get data from an input into the State. We probably want to display that somewhere so lets get the data from State to our Eyeballs.
 
 This follows these basic steps.
 
@@ -1081,7 +1075,7 @@ So the general idea is to:
 
 1. Create a function to add the associated grocery to the order, multiple times if needed.
 2. Display the order on the Order component, totting up the prices as required.
-3. On the Groceries component, configure a button with an event method to handle the click.
+3. On the Groceries component, configure a button with an event method to handle the click to add to the order.
 
 # Making an Add to Order function
 
@@ -1189,7 +1183,7 @@ We have to check a few things as we figure out the total via the Reduce array he
     },0 )
 ```
 
-Remember to actually display, and style the total somewhere: `{total}` 
+Remember to actually display, and style the total somewhere: `{total}`
 
 ## Loop over the OrderIds
 
@@ -1218,7 +1212,7 @@ renderOrder(key) => {
 
 Now the unordered list can look like this: `<ul>{orderIds.map(this.renderOrder)}</ul>`
 
-It's a fairly basic example but its something to bear in mind as a middle ground between putting everythign in render and making another component.
+It's a fairly basic example but its something to bear in mind as a middle ground between putting everything in render and making another component.
 
 Presumably you will want to show more than just the key for each order, but that's a detail you can figure out for your own needs! Some extra details may include:
 
@@ -1240,11 +1234,6 @@ This is fairly straightforward to sort since our Grocery Object keys are unique:
 ## Conclusion
 
 As long as we set up the props and manage the amount of code in our render function there is little React specific knowledge required for displaying Sate data. Having a good grasp of JS though will make life easier when it comes to getting the right bit of data from our props and displaying it effeciently. the rest is up to what exactly you want to display with your State data.
-
-
-
-
-
 
 
 
@@ -1807,7 +1796,7 @@ For each sign in provider there is two main steps:
 This is fairly straightforward:
 
 1. Follow steps 1-3 as before but this time select Github.
-2. This time the url is [github.com/settings/applications/new]
+2. This time the url is [https://github.com/settings/developers]
 3. Register a new OAuth application, and paste the Authorization callback URL from firebase
 4. The Client Id and Client Secret will be now availiable to add to Firebase.
 
@@ -2173,11 +2162,11 @@ Netlify is a relatively new kid on the block which I think is very easy to use a
 
 All done? Nope!
 
- If we refresh the page it will break as it cannot handle the routing. To fix this we need to create a redirects file in the build folder that will configure the routing to act as a single page application. This info can be found in the Netlify docs.
+If we refresh the page it will break as it cannot handle the routing. To fix this we need to create a redirects file in the build folder that will configure the routing to act as a single page application. This info can be found in the Netlify docs.
 
- 1. In the build folder create a file called `_redirects`
- 2. Open it up and add the following: `/*   /index.html 200` which instructs netlify to always point to index.html with a 200 status code.
- 3. Netlify deploy again from the Root App folder
+1. In the build folder create a file called `_redirects`
+2. Open it up and add the following: `/*   /index.html 200` which instructs netlify to always point to index.html with a 200 status code.
+3. Netlify deploy again from the Root App folder
 
 Netlify is now happily running the app. Probably
 
@@ -2218,9 +2207,12 @@ Once you have done that, your React app should be up and running and ready to ta
 
 Finally, lets imagine a scenario where we need a little bit more control than Create-React-App allows. It allows us to strip away all the training wheels and show thing as they really are. I am definately not at the stage where this is helpful to me but for completeness this is what you do...
 
+The command is simple: `npm run eject`
 
+It will now eject your app out of create-react-app!
 
+If you look in package.json now, you have a huge list of packages! You also have access to the Webpack to do all sorts of tweaks to your App.
 
 # Final Conclusion
 
-thats the end of the series
+Thats the end of the series. There is more fancy things to learn but this is enough info to help get a react up and running. Whenever I focus on a new framework/library/tool/tech I feel like my core JS skills atrophy, so I expect my next posts will be a back-to basics look at JS stuff. Good luck, have fun!

@@ -104,7 +104,7 @@ Github has far better tutorials on this. I am just keeping this for my own sanit
 1. Make a new repository on github
 2. Grab the url
 3. In the command line, first need to specify the url for the origin `git remote add origin <url>`
-4. Check the location by typing `git remote -v`vIf you have made a mistake you can use `git remote remove`
+4. Check the location by typing `git remote -v`vIf you have made a mistake you can use `git remote remove origin`
 5. `git push origin master` - makes your files go up to the master branch.
 
 If you get an error like this :
