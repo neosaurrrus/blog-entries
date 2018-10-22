@@ -1042,7 +1042,7 @@ Now that we have gone through one way of adding and retriving from state, in my 
 
 
 
-
+October 22 this is where we are at.
 
 
 
@@ -1233,7 +1233,7 @@ This is fairly straightforward to sort since our Grocery Object keys are unique:
 
 ## Conclusion
 
-As long as we set up the props and manage the amount of code in our render function there is little React specific knowledge required for displaying Sate data. Having a good grasp of JS though will make life easier when it comes to getting the right bit of data from our props and displaying it effeciently. the rest is up to what exactly you want to display with your State data.
+As long as we set up the props and manage the amount of code in our render function there is little React specific knowledge required for displaying State data. Having a good grasp of JS though will make life easier when it comes to getting the right bit of data from our props and displaying it effeciently. the rest is up to what exactly you want to display with your State data.
 
 
 

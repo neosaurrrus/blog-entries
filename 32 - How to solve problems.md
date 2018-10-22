@@ -215,8 +215,9 @@ const removeNumbers2 = function (sourceArray, checkArray) {
 }
 ```
 
-Now that still works but is a little more robust and clearer. If you were to think about it some more, you would probably kick yourself for not using the `filter` method.
+Now that still works but is a little more robust and clearer. If you were to think about it some more, you would probably kick yourself for not using the `filter` method in some way.
 
-The point is that a little time reviewing your code can make a difference, more time can reap bigger dividends.
+The point is that a little time reviewing your code can make a difference, but it might take a couple of interations to get to 'perfection'
 
 Now you note I didnt talk about the performance of our example much. There are certain patterns you should look out for when trying to look for efficiencies. The next few posts are gonna be all about some of the common ones you might come accross which will hopefully help you think more in terms of performance going forward.
+
