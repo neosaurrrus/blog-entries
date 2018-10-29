@@ -1,8 +1,6 @@
-Efficient Objects and Arrays/
-
+Efficient Objects and Arrays!
 
 You are familiar with Objects and Arrays right? When you need to use them, you make your functions and it all works. Life is good!
-
 
 But then due to your amazing skills you are hired to work with really large data sets, a billion facebook profiles, or just the English dictionary. Now your thrown together functions might not be running so quick.  Life is now bad!
 

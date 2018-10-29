@@ -1241,9 +1241,11 @@ As long as we set up the props and manage the amount of code in our render funct
 ------- 
 CHAPTER 25: React Persistance with Firebase.
 
-So far our React apps have been volitile, as in if we refresh the page or close the browser we lose what we did.
+This is part 9 of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com).
 
-What would be great if there was an easy way of mirroring our state to a database. Lucky for us then, there is!
+We have made a fairly clever CRUD app, where state and props are used to react and update the UI accordingly. So far our React apps have been volitile, as in if we refresh the page or close the browser we lose what we did. What would be great if there was an easy way of mirroring our state to a database. Lucky* for us then, there is!
+
+(*By luck I actually mean thanks to all the awesome people who build such things for the rest of us to use!)
 
 # Introducing Firebase
 
@@ -1348,8 +1350,9 @@ componentWillUnmount(){
 
 ...and thats why we needed `this.ref`!
 
+## Final Thoughts
 
-I think there is a definite series on other firebase uses worth doing. Probably will forget though.
+I have used Mongo previously, Firebase has a pretty slick way of working too. I think there is a definite series on other Firebase uses worth doing. Probably will forget though.
 
 
 
@@ -1459,12 +1462,14 @@ Using localStorage is a fairly straightforward process, there is just a few gotc
 
 
 
-
-
-
 Chapter 26: Editing And Deleting Items from State
 
-Coming from a traditonal REST API point of view, When we create an Edit form, we have four main steps:
+
+This is part 11of my React Learning series. Using knowledge gleaned from [Wes Bos' React for Beginners](www.reactforbeginners.com).
+
+So far we have our application beign able to Create and Read. Let's look at Updating and Deleting to getthe whole CRUD thing going on
+
+Coming from a REST API point of view, When we create an Edit form, we have four main steps:
 
 1. Get the data that currently exists for an item.
 2. Show the data for the user to look at

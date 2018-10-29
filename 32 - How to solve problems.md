@@ -43,11 +43,13 @@ You shouldnt do this willy-nilly, but consider the following scenarios, in a fun
 - Empty inputs ( 2, )
 - Invalid Inputs (2, "fish")
 
-Also consider how the output should be presented. Should it just be the value, does it it need rounding, does it need to come back in a string etc?
+Also consider how the output should be presented. Should it just be the value, does it it need rounding, does it need to come back in a string etc? 
 
 Playing around with examples, is an extension of understanding the problem and might help uncover some key things to pay attention to when building your solution.
 
 In my experience, people are very good at telling you what they want, but even better at thinking they have given you all the details you need to deliver. Don't be afraid to ask those dumb questions as it will save you time in the long run!
+
+Final point, when we are focused on learning we tend to ignore most edge cases to focus on something specific. This is why I won't be following this advice in my blog posts! Just remember real life production systems are not as forgiving!
 
 # Break it Down
 
@@ -173,7 +175,7 @@ const removeNumbers = function (sourceArray, checkArray) {
             //3. where we find it, remove the element
             if (numberToCheck === sourceArray[j]) {
                 sourceArray.splice(j,1);  
-                j--              
+                j--
             }
         }
     }
