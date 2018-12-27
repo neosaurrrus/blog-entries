@@ -1,10 +1,10 @@
 # Big O Notation
 
-Its big because its a really important concept.
+Its big because its a really important concept. And also is a capital letter. Let's talk about it.
 
 # Why do we need it?
 
-In the modern age, we assume our computers can do anything we ask instantly and can remember as much as you tell it to. To be fair, in most cases that is effectively true, however when we start working with large data sets, you can hit the limits of your super fancypants processor suprisingly fast.
+In the modern age, we assume our computers can do anything we ask instantly and can remember as much as you tell it to. To be fair, in most cases that is effectively true, however when we start working with really large data sets, you can hit the limits of your super fancypants processor suprisingly fast.
 
 We can figure out a number of solutions to solve a problem in code. However some are better than others when dealing with a lot of data, big O is a system that allows us to evaluate the performance of the solution.
 
@@ -71,7 +71,6 @@ In the example above, hopefully it is clear to see that no matter what *n* is, t
 
 This is a constant relationship so this has a **constant time complexity**
 
-
 ## Why do we care?
 
 Now you might say, they are different functions, of course they would take different times! I hear you, but what if I told you there is a way to do the first function with a constant time complexity...
@@ -83,7 +82,7 @@ function addUpTo(n){
 addUpTo(5);
 ```
 
-Mind Blown. I wish I could say I thought that out myself.
+Mind Blown. I wish I could say I thought that out myself....but I didn't.
 
 ## Quadratic complexity
 
@@ -147,10 +146,10 @@ Remember I said there were other complexities, these involve logarithms:
 
 A logarithm is the opposite to an exponent, in really simple words as exponents get bigger and bigger with , logarithms get smaller and smaller.
 
-A space or time complexity of O(log n) will start similar to O(n) but will taper off to a O(1). This is really good thing to do. 
+A space or time complexity of O(log n) will start similar to O(n) but will taper off to a O(1). This is really good thing to do.
 
-Almost impossible right? Nah, its just finding ways to discount what is not required to process. We do it all the time, if I asked you to find 'fish' in the dictionary, you probably won't start at `Aardvark` and proceed one word at a time which is O(n). 
+Almost impossible right? Nah, its just finding ways to discount what is not required to process. We do it all the time. If I asked you to find **'fish'** in the dictionary, you probably won't start at `Aardvark` and proceed one word at a time which is O(n). Think about how you would instead...and note that it is only possible because the dictionary is sorted. That's important to consider.
 
 You can also have a O(nlog n) which is better than a quadratic time complexity at least. Lets see all those on a graph.
 
-Logarithmic time complexity comes into its own when performing searches or sorting algorithms, and is a common feature as part of rescursion. All things I want to write about at some point so I will expand upon it in another post.
+Logarithmic time complexity comes into its own when performing searches or sorting algorithms, and is a common feature as part of rescursion. These are all things I want to write about at some point so I will expand upon it in another post.

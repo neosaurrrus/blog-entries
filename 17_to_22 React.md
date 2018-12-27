@@ -780,8 +780,8 @@ Now the component is capturing details about the input when there is a form subm
 When the goToProfile method is run, we have asked it to `console.log(this)`, the `this` here is the component. But we can drill deeper:
 
 - `this.myInput` will return the reference
-- `this.myInput.value` will return the input for which the ref was placed.
-- `this.myInput.value.value` will return the value of the input
+- `this.myInput.current` will return the input for which the ref was placed.
+- `this.myInput.current.value` will return the value of the input
 
 As you can see there is quite a few layers involved here! It's a good idea to put this into a variable when we use to to go to that URL.
 
@@ -2162,7 +2162,7 @@ This should now have your application up and running a temporary url. You can co
 
 Netlify is a relatively new kid on the block which I think is very easy to use and very highly recommended.
 
-1. Install the Netlify Command Line Tool globllly - `npm i netlify -g`
+1. Install the Netlify Command Line Tool globally - `npm i netlify-cli -g`
 2. Deploy using Netlify from the Root App folder - `netlify deploy`. Specify `build` as the current path to deploy.
 
 All done? Nope!
