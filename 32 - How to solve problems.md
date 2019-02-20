@@ -43,7 +43,7 @@ You shouldnt do this willy-nilly, but consider the following scenarios, in a fun
 - Empty inputs ( 2, )
 - Invalid Inputs (2, "fish")
 
-Also consider how the output should be presented. Should it just be the value, does it it need rounding, does it need to come back in a string etc? 
+Also consider how the output should be presented. Should it just be the value, does it it need rounding, does it need to come back in a string etc?
 
 Playing around with examples, is an extension of understanding the problem and might help uncover some key things to pay attention to when building your solution.
 
