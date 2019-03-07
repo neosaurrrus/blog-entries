@@ -815,3 +815,387 @@ updateItem = (event, updateItemMutation) => {
 We can use the loading boolean Apollo provides to change the *Save Changes* button to a *Saving Changes* button dynamically with this one clever trick.
 
 `<button type="submit">{loading? 'Saving' : 'Save'} Changes</button>`
+I had trouble with an 'Unknown Argument' error but redeploying seemed to fix it.
+
+# Conclusion
+
+It is quite a tricky set of tasks to get Update path working with the stack we have. Hopefully the above jogs my memory when I am doing this elsewhere!
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Deleting Items using Apollo/Yoga/Prisma
+
+# Make a Basic deleteItem component
+
+First we want to get a basic component linked to a button, doesn't need to do anything right now but its good to get the basics up and running.
+
+1. Turn the item components delete button into its own class based component. Lets call it `<DeleteItem>`
+
+Make a regular class based component and put the button in there.
+
+Let's make sure that orks before we get into the clever stuff.
+
+# Create DeleteItem Mutation
+
+On the backend we need to get the delete mutation up and running
+
+## Schema
+Let's open up our schema.graphql file and add our deleteItem mutation:
+
+`deleteItem(id:ID!): Item` 
+
+It needs an ID as an argument and may return an item. Nothing too controversial there.
+
+
+## Resolver
+In our mutation.js we need to build the resolver.
+
+The resolver needs to:
+
+1. Find the item
+
+2. Delete it!
+
+The reason we find it first is that we might want to do something with it prior to deleting it, such as checking permissions. We wont go into it that but the approach below will allot that to be done more easily.
+
+
+```js
+async deleteItem(parent, args,ctx,info){
+    const where = {id: args.id};
+    const item = await ctx.db.query.item({where}, `{ id title}`)
+    
+    return ctx.db.mutation.deleteItem({where}, info)
+}
+```
+
+Cool, thts the back end stuff done. As always we can use the playground to test it out. 
+
+# Building out the Delete Item Component
+
+Ok, now lets look at the front-end component. As we are doing a graphql mutation we need to import some stuff:
+
+`import {Mutation} from 'react-apollo'`
+`import gql from 'graphql-tag'`
+
+## Write Mutation
+
+We need to use that graphql-tag to write our query. Which will look like this:
+
+```js
+const DELETE_ITEM_MUTATION = gql`
+    mutation DELETE_ITEM_MUTATION($id:ID!){ 
+        deleteItem(id: $id){
+            id
+        }
+    }
+`
+```
+
+## Add Mutation component to Render
+
+Next we need to wrap the button in a mutation component. This requires a few arguments:
+
+1. The mutation we specified
+2. Variables that specify what we are deleting. That will require us to pass id in as a prop `id={item.id}` so go to the component/page that is calling the DeleteITem component and do that!
+3. And in the function, we pass in a destructured error argument, so we can handle erros nicely.
+
+```js
+<Mutation mutation={DELETE_ITEM_MUTATION} variables={{
+    id: this.props.id}}>
+        {(deleteItem, {error}) => (
+            <button> Delete </button>
+        )}
+  
+</Mutation>
+```
+
+## On click handler to delete
+
+Now we need the button to run the query so we need   an onClick handler:
+
+```js
+<button onClick={() => {
+    if (confirm('Are you sure?')){
+        deleteItem();
+    }
+}}>Delete</button>
+}}>
+```
+
+That should work, however you wont see the change in the items component without refreshing which is sub-optimal. This is where things get a little hairy.
+
+# Interface updates in apollo
+
+We could force the interface to rerun the show all items query which will return the refreshed list.
+
+However we could also just remove a singular item more surgically, which is what we will do here using an update function which is added to the Mutation tag: `update={this.update}`
+
+The updata function will have the following steps:
+
+1. Read the cache items to get what was originally returned, lets call this data
+2. Modify data to filter out the item we deleted
+3. Rerun the query with the filtered data
+
+## Read the cache items
+Apollo has a cache which holds the items data. We can use this to look up the details of the item we want to remove on the front end. The cache cannot be modified directly but requires a graphql query to access. Handily we already wrote an ALL_ITEMS_QUERY for the items page originally. We can leverage this ourselves.
+
+## The completed update function
+
+The update function will be shaped like this:
+
+```js
+    update = (cache, payload) => {
+        //manually update the cache on the client, so it matches the servers
+            //1. Read the cache items
+            const data = cache.readQuery({ query: ALL_ITEMS_QUERY});
+            console.log(data,payload)
+            //2. filter the deleted item out of the page
+            data.items = data.items.filter(item => item.id !== payload.data.deleteItem.id)
+            //3. Put the filtered items back
+            cache.writeQuery({ query: ALL_ITEMS_QUERY, data: data})
+    }
+```
+
+We need to place that function in the component.
+
+Note that it uses the ALL_ITEMS_QUERY as used in our Items component so we need to make sure we export it from the Items.js component and import it to our deletedItems compoment.
+
+Then we make sure the mutation in the render method has it as a property:
+`update={this.update}`
+
+This will update the cache and the user's view accordingly.
+
+Lovely. Here is the DeleteItem component in full:
+
+```js
+import React, { Component } from 'react';
+import {Mutation} from 'react-apollo'
+import gql from 'graphql-tag'
+import {ALL_ITEMS_QUERY} from './Items';
+
+const DELETE_ITEM_MUTATION = gql`
+    mutation DELETE_ITEM_MUTATION($id:ID!){ 
+        deleteItem(id: $id){
+            id
+        }
+    }
+`
+
+class deleteItem extends Component {
+
+    update = (cache, payload) => {
+        //manually update the cache on the client, so it matches the servers
+        //1. Read the cache items
+        const data = cache.readQuery({ query: ALL_ITEMS_QUERY });
+        console.log(data, payload)
+        //2. filter the deleted item out of the page
+        data.items = data.items.filter(item => item.id !== payload.data.deleteItem.id)
+        //3. Put the filtered items back
+        cache.writeQuery({ query: ALL_ITEMS_QUERY, data: data })
+    }
+
+    render() {
+        return (
+            <Mutation mutation={DELETE_ITEM_MUTATION} variables={{
+                id: this.props.id }}
+                update={this.update}
+            >
+                {(deleteItem, { error }) => (
+                    <button onClick={() => {
+                        if (confirm('Are you sure?')) {
+                            deleteItem();
+                        }
+                    }}>
+                        Delete
+                    </button>
+                )}
+            </Mutation>
+        );
+    }
+}
+
+export default deleteItem;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Reading, the easy bit of CRUD
+
+## Backend Stuff
+
+What we need should already exist but its worth checking: 
+
+In `schema.graphql` for the single item query we should have an entry as follows under the Query Type:
+
+`item(where: ItemWhereUniqueInput!): Item`
+
+Next we need to check the query resolver for a single item query which should look like this:
+
+`item: forwardTo('db')`
+
+Again we are reliant on Prisma to do the heavy lifting for us.
+
+# Front End Stuff
+
+Ok, now the backend looks good we can work on displaying a single item on the front end. This follows a similar pattern to Create, Update and Delete.
+
+## Make an Item page
+
+In nextJS we can just create an item.js file in the pages folder. Or more likely, copy the items one that already exists. We just want it to display a singleItem component we are about to write. 
+
+```js
+import SingleItem from '../components/SingleItem'
+const Item = props => (
+    <div>
+        <p>hello</p>
+    </div>
+)
+export default Item;
+```
+
+## Make a SingleItem component
+
+Lets just make a class based component with a simple hello to make sure we have the component and page working right:
+
+```js
+import React, { Component } from 'react';
+
+class SingleItem extends Component {
+    render() {
+        return (
+            <div>
+                <p>This is your single item component speaking </p> 
+            </div>
+        );
+    }
+}
+
+export default SingleItem;
+```
+
+
+## Make the GQL query
+
+Now we need a graphql query to return the item we want and the properties we care about.
+
+```js
+const SINGLE_ITEM_QUERY = gql`
+    query SINGLE_ITEM_QUERY($id:ID!){
+        item(where:{id:$id}){
+            id
+            title
+            description
+            largeImage
+        }
+    }
+`;
+```
+## Pass id to the component via props
+
+Before we progress we could pull in the id via props, so back in your item.js page change the component to the following:
+
+`<SingleItem id={props.query.id}>`
+
+You can then refer to it with `{props.id}` probably good to test it before we begin pulling things in anger.
+
+# Render Method
+
+So once again we need to wrap our returned stuff in the render method in a query tag, handling loading and errors, so that looks like this:
+
+```js
+ render() {
+        return (
+            <Query
+                query={SINGLE_ITEM_QUERY} 
+                variables={{
+                    id: this.props.id
+                    }}
+            >
+                {({error, loading, data}) => {
+                    if(error) return <p>Error!</p>
+                    if(loading) return <p> Loading</p>
+                    console.log(data)
+                    return <p>This is your single item component speaking - {this.props.id}</p>
+                }}
+            </Query>
+        );
+    }
+```
+
+Obviously, I have gone for the basic loading and error options there. You may wish to have components which does something more clever.
+
+Also, you notice I have snuck in a console.log which should, if all has gone well, reveal the payload which we can use on the page. I wont go into that too much as I think that part is up to you.
+
+## Handle incorrect IDs
+
+One common error we do want to deal with is if the ID as not been provided or doesnt exist this can be a single client-side check:
+
+`if(!data.item) return <p>No item found for {this.props.id}</p>`
+
+## Get it styled!
+I wont cover this in too much detail but as a recap of using Styled Components we will want to:
+
+1. `import styled from 'styled-components'`
+2. Make a const containing our CSS:
+
+```js
+const SingleItemStyle = styled.div`
+    max-width 1200px;
+    margin: 2rem auto;
+`
+//you get the idea
+ ```
+
+Play with the styles as you see fit!
+
+3. Place our returned data in `<SingleItemStyle>` tags
+ 
+## Change the MetaTag using Side effects
+
+One cool thing you might want to do is change the page title based on the name of the item you are displaying.
+
+In NextJs you will have likely created a meta component containing Head tags.
+
+So effectively we are reaching up out of the component to change something else, this is a *side effect*
+
+So first import the head into the SingleItem component:
+
+`import head from 'next/head';
+
+Then we can simple refer to the head tag in our returned query function function:
+
+```js
+<Head>
+    <title> {item.title} </title>
+</Head>
+```
+
+So thats pretty much CRUD in the world of NextJS/Apollo/GraphQL Yoga/Prisma.
+
+It was really interesting looking hopw this particular stack adds and removes compliexities in different areas.
+
