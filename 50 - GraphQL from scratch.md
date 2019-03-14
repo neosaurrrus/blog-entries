@@ -1,5 +1,8 @@
+Setting up a graph QL server can be pretty complex. This is my guide to getting it up and running for a simple app. 
 
 # Backend
+
+I'll skip over the inital bits.
 
 ## The very basics
 - Created Folders
@@ -272,7 +275,7 @@ If it all went to plan you should be use to use the following query and get the 
 ```js
 //Query
 {
-  driver(id: 2){
+  driver(id: "2"){
     firstName
     team{
       name
@@ -318,7 +321,7 @@ So lets test it out!
 
 ```js
 {
-  team(id:1){
+  team(id:"1"){
     name
     drivers{
       firstName
@@ -383,17 +386,10 @@ mLab is probably easier but I do alot fo work offline so it is more useful for m
 ```js
 const mongo = require('mongodb').MongoClient;
 const mongoose = require("mongoose");
-const url = 'mongodb://localhost:27017';
+const url = 'mongodb://localhost:27017/formula1';
 
-mongo.connect(url, (err, client) => {
-    if (err) {
-        console.error(err)
-        return;
-    }
-    console.log("MonogoDB Connected")
-    const db = client.db('formula1')
-    const collection = client.db('competitors')
-});
+mongoose.connect(url);
+//need code to check connection here
 ```
 
 ## The Mongodb Models
@@ -425,6 +421,162 @@ If you are eagle-eyed you'd notice the lack of ID. This is because mongodb will 
 
 ## Using our models
 
-If we go back to the schema.js, i.e the graphql schema. We can use these models instead of the placeholder arrays, and we need to change our resolver functions to query the database.
+If we go back to the schema.js, i.e the graphql schema. We can use these models instead of the placeholder arrays, and we need to change our resolver functions to query the database. Once we import them of course.
 
-But wait... they wont be able to query anything useful from a blank database will they? Hmm we better change that.
+But wait... they wont be able to query anything useful from a blank database will they? Hmm we better change that...
+
+## Mutations
+
+Mutations are all about making a change. Creating, Updating or Deleting pretty much. Like our RootQuery we need to define our mutations.
+
+Here is now we would do an addTeam mutation:
+
+```js
+const Mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        addTeam: {
+            type: teamType, //What are we making?
+            args: {         //What details are you providing?
+                name: {type: GraphQLString},
+                founded: {type: GraphQLInt}
+            }, 
+            resolve(parent, args){
+                let team = new Team({ //Use the Team model defined in the DB plugging in arg values
+                    name: args.name,
+                    founded: args.founded
+                })
+                return team.save(); //Save it to DB and provide the result back
+            }
+        }
+    }
+});
+```
+
+Boom, we are now creating teams on the Database through GraphQL. Lets make some drivers...
+
+```js
+addDriver: {
+            type: driverType,
+            args: {
+                firstName: {type: GraphQLString},
+                lastName: {type: GraphQLString},
+                nationality: {type: GraphQLString},
+                teamId:   {type: GraphQLID}
+            },
+            resolve(parent,args){
+                let driver = new Driver({
+                    firstName: args.firstName,
+                    lastName: args.lastName,
+                    nationality: args.nationality,
+                    teamId: args.teamId
+                })
+                return driver.save();
+            }
+        }
+```
+
+So we got the mutations working with the database. However the queries' resolve function also need updating so lets do that...
+
+## Query Resolve functions using a database
+
+So we have two different types of resolve function:
+
+- Find One Driver/Team
+- Find All Driver/Team
+
+Here is where mongoose makes life easier:
+
+Find all:
+
+`resolve(parent, args) {return Driver.find()}`
+
+Find one:
+
+`resolve(parent, args){return Driver.findById(args.id)}`
+
+
+## Non-null values
+
+Right now when we do a mutation, you don't have to provide certain fields. This obviously isnt good when all friends are required
+
+We can enforce by using a GraphQL feature called `GraphQLNonNull`
+
+First we grab it from GraphQL, as you can see we are grabbing a lot:
+
+```js
+const {
+    GraphQLObjectType,
+    GraphQLString,
+    GraphQLSchema,
+    GraphQLID,
+    GraphQLInt,
+    GraphQLList,
+    GraphQLNonNull
+} =  graphql;
+```
+
+Once we got it working it is a case of wrapping our Add mutation arguments with it like so:
+
+
+
+# Front-end magic!
+
+Ok, so we have a database with a graphql server where we can mutate and query items.
+
+Normally we want to use that information in a web app which exists on the front end.
+
+We will be using React as our framework. We will first aim to create:
+
+- A driver list component to show our drivers
+- An add driver component to add a driver
+
+
+These will need to talk to graphql to be able do this. Enter Apollo:
+
+By default Javascript doesnt understand graphql. Apollo is a mechanism to be able to talk to graphql and a few other goodies along the way.
+
+Apollo uses React so we need to get React up and running first
+
+## Our React Platform - NextJS
+
+There is alot of ways to get React up and running, for a little bit of a change this time around I will be using NextJS so lets get that up and running. I could write this up but really the [next docs](https://nextjs.org/docs/) does a pretty good job of the basic setup so lets assume you have a home page up and running.
+
+## The basics
+Since I have other posts about React, this might be a light till we get to the GraphQL bits
+
+My Component Structure in React is like this:
+
+- App (Our Parent Container)
+    - DriversList (Lists our drivers)
+    - TeamsList (Lists out Teams)
+
+Both of these just contain an unordered lsit with a placeholder item.
+
+## Enter Apollo
+
+Apollo will be our GraphQL client that will be link between React and GraphQL. Lets get it installed first of all, again you are best referring to the Apollo Docs for this. Perhaps even do the little tutorial they have?
+
+`npm install apollo-boost react-apollo graphql`
+
+## Setting up Apollo in our App
+
+1. Lets import Apollo:
+
+`import ApolloClient from 'apollo-boost'`
+
+2. Set up Apollo to use the GraphQL endpoint:
+
+```js
+const client = new ApolloClient({
+    uri: "http://localhost:5000/graphql/"
+})
+```
+3. Add Apollo Provider which makes React work with it
+
+First import it:
+
+`import { ApolloProvider } from 'react-apollo'`
+
+Then wrap our JSX code within <ApolloProvider> tags. Here is our whole component:
+
