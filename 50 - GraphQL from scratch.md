@@ -580,3 +580,19 @@ First import it:
 
 Then wrap our JSX code within <ApolloProvider> tags. Here is our whole component:
 
+## Errors!
+
+Now I am not sure if this is my setup or not but I had to do a few more things to get it working.
+
+1. Install `node-fetch` (I think globally)
+2. Import it and tweak the client set up like so:
+
+```js
+const client = new ApolloClient({
+        uri: "http://localhost:4000/graphQL",
+        fetch: fetch
+
+})
+```
+
+I assume this is a Next thing but I have no idea. Must learn some more...
