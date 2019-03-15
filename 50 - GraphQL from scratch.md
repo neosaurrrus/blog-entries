@@ -596,3 +596,61 @@ const client = new ApolloClient({
 ```
 
 I assume this is a Next thing but I have no idea. Must learn some more...
+
+## Our first Apollo Query
+
+So we have our DriversList component, we want it to return the drivers we have.
+
+
+1. Import libraries
+2. Make Query
+3. Bind Query to the Component
+
+So this will look like this:
+
+```js
+import { gql } from 'apollo-boost'
+import { graphql } from 'react-apollo'
+
+const GET_DRIVERS_QUERY = gql`
+    {
+        drivers {
+            id
+            firstName
+            lastName
+            nationality
+
+        }
+    }
+`
+
+//Skipping the Class Component bit, not relavent
+
+export default graphql(GET_DRIVERS_QUERY)(DriverList);
+```
+
+However we will now have a problem, the fetch wont work as the server doesnt trust where the request is coming from. Makes sense, we cant get the whole internet poke the DB, it would get upset. 
+
+`Access to fetch at 'http://localhost:5000/graphQL' from origin 'http://localhost:3000' has been blocked by CORS policy`
+
+Lets sort it out by going to the server.
+
+## Sorting out CORS
+
+So what can I do to make the backend love frontend?
+
+```js
+const cors = require('cors')
+
+//allow cross-origin requests
+app.use(cors())
+```
+
+There you go. Seems wierd, must investigate further.
+
+Anyhow, if you stick a console for this.props you will be happy to notice you get back two objects. One is a fairly blank one that is when the request is still loading, the second is once loading is complete. Note the loading property is a boolean for this
+
+## Displaying the data Apollo
+
+
+
