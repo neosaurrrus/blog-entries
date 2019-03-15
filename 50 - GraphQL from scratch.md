@@ -652,5 +652,27 @@ Anyhow, if you stick a console for this.props you will be happy to notice you ge
 
 ## Displaying the data Apollo
 
+So we got the Data object ready to go how do we put in on the screen? Lets find out..
+
+1. Make a function in the DriverList component that checks for loading and outputs accordingly.
+
+```js
+ showDrivers(){
+        let data = this.props.data
+        if (data.loading){
+            return <div> Fetching Drivers</div>
+        } else {
+            return data.drivers.map (driver => {
+            return <li key={driver.id}> {driver.firstName} {driver.lastName}</li>
+            })
+        }
+    }
+```
+
+2. You can call this function where you want the results in the render method:
+
+`{this.showDrivers()}`
+
+**You can do this for Teams in a similar way**
 
 
