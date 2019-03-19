@@ -601,7 +601,6 @@ I assume this is a Next thing but I have no idea. Must learn some more...
 
 So we have our DriversList component, we want it to return the drivers we have.
 
-
 1. Import libraries
 2. Make Query
 3. Bind Query to the Component
@@ -673,6 +672,141 @@ So we got the Data object ready to go how do we put in on the screen? Lets find 
 
 `{this.showDrivers()}`
 
-**You can do this for Teams in a similar way**
+**You can do this for Teams in a similar way so I wont do that here**
 
+## Looking up a Team for our Add Driver form
+
+So we can query using Apollo to show our Drivers. So lets say we want to add a driver... that will require a form but we have an issue. We want to select a team for each driver but the issue is that unless the user knows the ID of the Team its unlikely to go well. So we want the form to have a list of existing teams, which, requires us to query the teams in the database.
+
+The process for this goes as follows:
+
+1. Import gql from apollo-boost
+2. Import graphql from react-apollo
+3. Make the GET_TEAMS_QUERY
+4. Bind the component with the query `graphql(GET_TEAMS_QUERY)(AddDriver)`
+5. Make a function in the component that
+    - If loading - returns `<option>Loading...</option>`
+    - If not loading - map through the array returning an option for each team with a key and value of the ID, which will allow the association to be make on the backend `
+
+
+That will get us a drop down with the teams in the database.
+
+
+## Submitting data to our backend!
+
+OK now lets send the data to the backend.
+
+1. Declare a state for the input form - `state{}`
+2. Configure the inputs to be managed from state - `<input type="text" name="firstName" onChange={this.handleChange}/>`
+3. Create a Add Driver mutation:
+
+```js
+const CREATE_DRIVER_MUTATION = gql`
+    mutation {
+        addDriver(firstName: "", lastName: "", nationality: "", teamId:"") {
+            name
+        }
+    }
+`
+```
+
+4. Bind 2 queries via compose:
+
+At the start add:
+ `import {graphql, compose} from 'react-apollo'`
+
+At then end use compose to contain both query and mutation:
+
+```js
+export default compose(
+    graphql(GET_TEAMS_QUERY, {name:"GET_TEAMS_QUERY"}),
+    graphql(CREATE_DRIVER_MUTATION, {name:"CREATE_DRIVER_MUTATION"}),
+)(AddDriver);
+```
+This will now rename the data object returned in the query to the query/mutation name so that will need to be changed in the code.
+
+`let data = this.props.GET_TEAMS_QUERY`
+
+5. Attach an an event handler to the form submission to perform a mutation using what we have in state.
+
+To do this we need query variables and modify our mutation:
+
+```js
+const CREATE_DRIVER_MUTATION = gql`
+    mutation($firstName: String!, $lastName: String!, $nationality:String!, $teamId:ID!) {
+        addDriver(firstName: $firstName, lastName: $lastName, nationality: $nationality, teamId:$teamId) {
+            firstName
+            lastName
+            nationality
+            team{
+                name
+            }
+        }
+    }
+`
+```
+
+Then in the submit form we call the mutation passing in some variables:
+
+```js
+submitForm = (event) =>{
+        event.preventDefault();
+        this.props.CREATE_DRIVER_MUTATION({
+            variables:{
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                nationality: this.state.nationality,
+                teamId: this.state.teamId
+            }
+        })  
+    }
+```
+
+
+If it all works... nothing will happen unless you refresh the page. So that sucks so let's refresh the query by rerunning the GET_ALL_DRIVERS. To do this Apollo gives us a refetch command we can add when doing running a query/mutation, we whack it as another part the query like so.
+
+```js
+submitForm = (event) =>{
+        event.preventDefault();
+        this.props.CREATE_DRIVER_MUTATION({
+            variables:{
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                nationality: this.state.nationality,
+                teamId: this.state.teamId
+            },
+            refetchQueries: [{query: GET_DRIVERS_QUERY}]
+        })  
+    }
+```
+
+And yeah, we need this component to have access to the query it wants to refetch.
+
+Hmmm, we are starting to get alot of duplicate queries in our components, that is asking for trouble so let's look at sorting this out.
+
+
+## Exporting queries into thier own file
+
+So, our AddDrivers component has the following queries:
+
+- CREATE_DRIVER_MUTATION
+- GET_DRIVERS_QUERY
+- GET_TEAMS_QUERY
+
+Since we have other components that also rely on those queries we should get a single source of truth for these. Luckily... we got the skills for that.
+
+1. Make a folder called queries and make a file called queries.js
+2. import gql from apollo-boost
+3. Move our queries and components into the file but make sure to export them: `export {GET_DRIVERS_QUERY, GET_TEAMS_QUERY, CREATE_DRIVER_MUTATION}`
+4. Import the queries as required like so: `
+5. You can get rid of the gql import from apollo boost as the component doesnt need it anymore
+
+That is the general idea, you can apply this to all other components as needed.
+
+
+## Making our Drivers Details Page.
+
+I want to launch a component to get more details about a drive. Lets call it `driverDetails.js`
+
+It needs a single query returning more details but for now lets get the basics up and running. As always I like a placeholder to make sure its all wired up as needed:
 
