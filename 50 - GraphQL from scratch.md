@@ -803,10 +803,139 @@ Since we have other components that also rely on those queries we should get a s
 
 That is the general idea, you can apply this to all other components as needed.
 
-
 ## Making our Drivers Details Page.
 
 I want to launch a component to get more details about a drive. Lets call it `driverDetails.js`
 
 It needs a single query returning more details but for now lets get the basics up and running. As always I like a placeholder to make sure its all wired up as needed:
 
+```js
+import React, { Component } from 'react';
+import { graphql, compose } from 'react-apollo'
+
+
+class DriverDetails extends Component {
+    render() {
+        return (
+            <div>
+                <p>This is driver details.</p>
+            </div>
+        );
+    }
+}
+
+export default DriverDetails;
+```
+
+## Our GET_DRIVER_QUERY
+
+Our query needs to pass in an ID which then is used to pick a driver. Our query will look like this:
+
+```js
+const GET_DRIVER_QUERY = gql`
+    query($id: ID){
+        driver(id:$id) {
+            id
+            firstName
+            lastName
+            nationality
+            team{
+                name
+                drivers{
+                    firstName
+                    lastName
+                }
+            }
+        }
+    }
+`
+```
+
+We want to return the team they drive for, but then the drivers that drive for that team too. Its complex one but this is where GraphQL shines.
+
+Export GET_DRIVER_QUERY and then
+
+1. Import it into our new component
+2. Bind the Component to the query
+
+To test it is all working you can throw the component onto a page.
+
+Now we need to work on passing the ID to the component so it can do its query magics.
+
+To do this we need:
+
+1. Listen for a click on a driver
+2. Find out the Id of the driver we clicked on.
+3. Pass the id as a prop to the DriverDetails component.
+4. Show the driver details.
+
+
+
+1. We have the <li>'s being created so we need to attach an event listener to each one:
+
+```js
+<li key={driver.id}  onClick={(event)=>{
+ this.setState({selected: driver.id})
+}}>
+```
+
+2. The event will set the state property 'selected' to the driver ID we better initialise that:
+
+`state = {selected: ""}`
+
+3. `<DriverDetails driverId={this.state.selected}/>`
+
+So if we add a console.log(this.props.driverid) on the driverDetails component we should get the relevent id back, all being well.
+
+4. Finally we now can pass the id as a variable for the GET_DRIVER_QUERY:
+
+```js
+export default graphql(GET_DRIVER_QUERY, {
+    options: (props) => {
+        return {
+            variables: {
+                id: props.driverId
+            }
+        }
+    }
+})(DriverDetails);
+```
+
+Now if we console.log(this.props) we will see that we get a data object back! Now its just a case of populating the component with the values we want!
+
+Not so fast...
+
+Lets do this in a managed way and check we have a result before proceeding:
+
+```js
+displayDriverDetails= () => {
+        const { driver } = this.props.data;
+        if (driver) {
+            const filteredDrivers = driver.team.drivers.map(d => {
+                if(driver.id!==d.id) return <li key={d.id}>{d.firstName} {d.lastName}</li>
+            })
+    
+            return (
+                <div>
+                    <h3>{driver.firstName} {driver.lastName}</h3>
+                    <h4>Nationality: {driver.nationality}</h4>
+                    <h4>Team: {driver.team.name}</h4>
+                    <b>Other Teammates:</b>
+                    <p>{filteredDrivers}</p>
+
+                </div>
+            );
+            } else {return <p>No driver selected</p>};
+    };
+    render(){
+        return (
+            <div>
+                {this.displayDriverDetails()}
+            </div>
+        )
+    }  
+```
+
+Cool, this is pretty much all we need!
+
+## 
