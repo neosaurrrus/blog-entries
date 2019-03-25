@@ -938,4 +938,97 @@ displayDriverDetails= () => {
 
 Cool, this is pretty much all we need!
 
-## 
+## Making an Add Team Component
+
+This will be similar to Adding a driver so let's recap...
+
+To do this we need to:
+
+1. Make a GraphQL Mutation to add teams
+2. Create a form for getting the relavent data
+3. Set up state and control the form inputs through state.
+4. On submission, perform the mutation
+5. Bind the mutation to the component.
+
+
+1. The GraphQL Mutation looks like this:
+
+```js
+const CREATE_TEAM_MUTATION = gql`
+  mutation($name: String!, $founded: Int!) {
+    addTeam(name: $name, founded: $founded) 
+    {
+      name
+      founded
+    }
+  }
+`;
+```
+Don't forget to export!
+
+2. The form we will use looks like this:
+
+```js
+<form>
+    <div class="field">
+        <label>Team Name:</label>
+        <input
+        name="name"
+        type="text"
+        onChange={this.handleChange}
+        />
+    </div>
+    <div class="field">
+        <label>Founded:</label>
+        <input
+        name="founded"
+        type="number"
+        onChange={this.handleChange}
+        />
+    </div>
+    <button>Add</button>
+</form>
+```
+
+3. State will be blank but the handleChange function will look like this:
+
+```js
+handleChange = (event) => {
+        let { name, value, type} = event.target
+        if (type==="number") value = Number(value)
+        this.setState({
+            [name]: value
+        })
+    }
+```
+Note that by default the value returned from inputs are strings so the founded year needs to be coerced into a number.
+
+4. Lets make the submit function like so:
+
+```js
+submitForm = (event) =>{
+        event.preventDefault();
+        this.props.CREATE_TEAM_MUTATION({
+            variables:{
+                name: this.state.name,
+                founded: this.state.founded
+            },
+            refetchQueries: [{query: GET_TEAMS_QUERY}]
+        })  
+    }
+```
+
+5. We need to bind CREATE_TEAM_MUTATION to the component like so:
+
+`export default graphql(CREATE_TEAM_MUTATION)(AddTeam)`
+
+All the above should work but it doesnt because...
+
+1. I forgot the form submit
+2. The export required using compose, no idea why
+3. The component that showed teams was upset about the refetched query. Until I made it pull the query from the queries file, which is the same as the Add Team component so thats probably why. 
+
+Good work!
+
+
+##
