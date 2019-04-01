@@ -1030,5 +1030,250 @@ All the above should work but it doesnt because...
 
 Good work!
 
+## Delete Driver path
 
-##
+So this one we will do end-to end. From backend to Front..
+
+1. Create the mutation in the GraphQL schema:
+
+```js
+deleteDriver: {
+            type: driverType,
+             args: { 
+                 id: {type: GraphQLID} 
+            },
+            resolve(parent, args) {
+                return Driver.findByIdAndDelete(args.id);
+            }
+        }
+```
+
+2. Test the query in graphiql:
+
+```js
+mutation{
+  deleteDriver(id:"5c93c96d2fc116136416d497"){
+    firstName
+    id
+  }
+}
+```
+
+3. Add the mutation to the frontend queries file (probably should split it to a mutations file at some point!)
+
+```js
+const DELETE_DRIVER_MUTATION = gql`
+  mutation(id: ID!) {
+    deleteDriver(
+      id:$id!
+    ){
+        id
+        firstName
+        lastName
+        nationality
+    }
+  }
+`;
+```
+
+4. Make a component that lists all the drivers with a delete button with a placeholder action:
+
+```js
+    drivers() {
+        let data = this.props.GET_DRIVERS_QUERY
+        if (data.loading) {
+            return <div>Fetching Drivers</div>
+        } else {
+            return data.drivers.map(driver => {
+                return <li key={driver.id}> {driver.firstName} {driver.lastName} - {driver.nationality} - {driver.team.name} <button value={driver.id} onClick={this.delete}>Delete</button></li> 
+            })
+        }
+    }
+```
+That return li is looking a little chunky, would be good to refactor that at some point.
+
+5. Write the query that performs the deletion:
+
+```js
+    delete = (event) => {
+        let value = event.target.value
+        this.props.DELETE_DRIVER_MUTATION({
+            variables: {
+                id: value
+            },
+            refetchQueries: [{ query: GET_DRIVERS_QUERY }]
+        })
+    }
+```
+
+Cool, you can assume the delete Team mutation and component is quite similar... too similar for bothering writing about. Especially since I just copy/pasted the above mostly!
+
+## Updating Driver details
+
+Ok, lets look at the big scary boss monster of CRUD... updating something that already exists.
+
+Ok chill it isnt that hard, lets break it down into the high level steps.
+
+1. Write an update driver GraphQL mutation
+2. Test it out on Graphiql
+3. Add the mutation to our queries component (still need to sort that out)
+4. Writes a component that:
+   - Has a driver form 
+   - Populate the form with details found for that particular driver
+   - On submission runs the update mutation.
+
+Ok lets do it. But lets do it for teams for a change...
+
+1. The Update Driver mutation should look like...
+
+```js
+updateTeam: {
+            type: teamType,
+            args: {  //What details are you providing?
+                id: { type: GraphQLID },
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                founded: { type: new GraphQLNonNull(GraphQLInt) }
+            },
+            resolve(parent, args) {
+                let team = new Team({ //Use the Team model defined in the DB pluging in arg values
+                    name: args.name,
+                    founded: args.founded
+                })
+                return Team.findOneAndUpdate(args.id, {
+                    name: args.name,
+                    founded: args.founded
+                });
+            }
+        }
+```
+
+
+2. We can test it out with the following:
+
+```js
+mutation{
+  updateTeam(id:"5c9a6b3e014d9816b5989e7f", name:"Ud", founded:2993){
+    name
+    id
+    founded
+  }
+}
+```
+
+One trap I noticed is that the returned values will be the old ones. However if you do a teams query it will be updated. I am guessing it takes a moment to update on the DB and hence graphql reports the first values. I don't think it matters for us right now.
+
+3. Lets make an update component.
+
+The way I will do this is via three functions:
+
+- getTeams - Runs a query to get all the teams, allows the selecting of a specific team
+  
+- setTeam - Runs a query to populate state/form with the selected Team's details. This allows editing, when the form is submitted it will run...
+
+- UpdateTeam - Runs the mutation to update the DB with the entry in state.
+
+The component code in full:
+
+```js
+import React, { Component } from 'react';
+import { graphql, compose} from 'react-apollo'
+import { UPDATE_TEAM_MUTATION, GET_TEAMS_QUERY, GET_TEAM_QUERY } from '../queries/queries'
+
+class UpdateTeam extends Component {
+
+
+    state = {
+        name:  null,
+        founded:  null,
+        teamId: null
+    }
+    handleChange = (event) => {
+        let { name, value, type} = event.target
+        if (type==="number") value = Number(value)
+        this.setState({
+            [name]: value
+        })
+    }
+
+    getTeams() { //List all teams as an option to select
+        let data = this.props.GET_TEAMS_QUERY;
+        if (data.loading) {
+            console.log("Loading teams")
+        } else {
+        return this.props.GET_TEAMS_QUERY.teams.map(team => {
+                return (<option name="teamId" key={team.id} value={team.id}>{team.name}</option>)
+            })
+        }
+    }
+
+    setTeam = (event) => { //Populate state which the selected team.
+        event.preventDefault();
+        let selectedTeam = this.props.GET_TEAMS_QUERY.teams.find(team => {
+            return team.id === this.state.teamId
+        })
+        if (!selectedTeam) return;
+        this.setState({
+            teamId: selectedTeam.id,
+            name: selectedTeam.name,
+            founded: selectedTeam.founded
+        })
+    }
+    updateTeam = (event) => { //Update the DB with the form's entries for the team.
+        event.preventDefault();
+        this.props.UPDATE_TEAM_MUTATION({
+            variables: {
+                id: this.state.teamId,
+                name: this.state.name,
+                founded: this.state.founded
+            }, refetchQueries: [{ query: GET_TEAMS_QUERY }]
+        })
+    }
+    render() {
+        return (
+        <div>
+            <form onSubmit={this.setTeam}>
+                <div className="field">
+                    <label>Team</label>
+                    <select onChange={(e) => {
+                        this.setState({
+                            teamId: e.target.value,
+                        })
+                    }}>
+                        <option name="select" key={"default"} value={"none"}>Select Team</option>
+                        {this.getTeams()}
+                    </select>
+                    <button>Select</button>
+                </div>
+            </form>
+            <form onSubmit={this.updateTeam}>
+                <div className="field">
+                    <label>Team Name:</label>
+                    <input
+                        name="name"
+                        type="text"
+                        value={this.state.name}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div className="field">
+                    <label>Founded:</label>
+                    <input
+                        name="founded"
+                        type="number"
+                        value={this.state.founded}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <button>Update</button>
+            </form>
+        </div>    
+        );
+    }
+}
+
+export default compose(
+    graphql(GET_TEAMS_QUERY, { name: "GET_TEAMS_QUERY" }),
+    graphql(UPDATE_TEAM_MUTATION, { name: "UPDATE_TEAM_MUTATION" }),
+    graphql(GET_TEAM_QUERY, { name: "GET_TEAM_QUERY" })
+)(UpdateTeam);
+```
