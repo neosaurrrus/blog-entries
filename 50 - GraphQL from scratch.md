@@ -1116,7 +1116,7 @@ Ok chill it isnt that hard, lets break it down into the high level steps.
 
 1. Write an update driver GraphQL mutation
 2. Test it out on Graphiql
-3. Add the mutation to our queries component (still need to sort that out)
+3. Add the mutation to our queries component (still need to split that out)
 4. Writes a component that:
    - Has a driver form 
    - Populate the form with details found for that particular driver
@@ -1218,7 +1218,7 @@ class UpdateTeam extends Component {
             founded: selectedTeam.founded
         })
     }
-    updateTeam = (event) => { //Update the DB with the form's entries for the team.
+    updateTeam = (event) => {  //Update the DB with the form's entries for the team.
         event.preventDefault();
         this.props.UPDATE_TEAM_MUTATION({
             variables: {
@@ -1277,3 +1277,5 @@ export default compose(
     graphql(GET_TEAM_QUERY, { name: "GET_TEAM_QUERY" })
 )(UpdateTeam);
 ```
+
+I think you get the general idea for doing the same for drivers.
