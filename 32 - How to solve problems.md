@@ -1,4 +1,4 @@
-We have all been stuck on things.
+We have all been stuck on things. Let's think about how to think about things
 
 # What is an algorithm
 

@@ -37,7 +37,7 @@ Its convention to provide the message in present tense....**However, the first t
 An important part of version control is knowing who has done what. So we first need to provide that information. The message you will get is fairly clear on what you need to do.
 
 
-## Back to the commit…
+## Back to the commit
 
 Now the app.js is no longer in the untracked list. Ok so if I make a change to app.js and run git status again, it will tell us that *the changed app.js file isnt staged for commit.*
 

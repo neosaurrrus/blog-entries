@@ -15,7 +15,6 @@ The escape character in Markdown is the backslash (\):
 \*\* Double asterisks normally makes the text Bold unless you use backticks to escape them \*\*
 
 
-
 ## Paragraphs and Text
 
 Its important to make sure we leave a clear line between our paragraphs else Markdown will just treat it as part of the same paragraph.
@@ -76,12 +75,15 @@ Tables are possible buts its a pain. Not every markdown parser supports it. You 
     | Country | Continent |
     | France | Europe |
 
+## Images
 
-## Conclusion
+This is a ! so ...
 
-I hope that gets you started with Markdown. To learn what I have just learnt in a better way I can recommend [Wes Bos' Mastering Markdown course](www.masteringmarkdown.com)
+`! [alt-text]`(url)`
 
-You cant be expected to learn everything so I would recommend having a cheatsheet bookmarked. Google your favourite.
+Should do the job nicely.
+
+
 
 ## Add to lists
 
@@ -101,3 +103,9 @@ Not everything works as it should though, code blocks are given in gist url form
 Nested Listed often tend to break.
 
 Overall though, the 5 mins it takes to sort out is far better than trying to spend time getting it correct using purely medium.
+
+## Conclusion
+
+I hope that gets you started with Markdown. To learn what I have just learnt in a better way I can recommend [Wes Bos' Mastering Markdown course](www.masteringmarkdown.com)
+
+You cant be expected to learn everything so I would recommend having a cheatsheet bookmarked. Google your favourite.
