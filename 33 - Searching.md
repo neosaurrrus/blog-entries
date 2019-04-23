@@ -83,4 +83,3 @@ function subStringCount(str, subStr){
     return count
 }
 ```
-
