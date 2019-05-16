@@ -3,7 +3,6 @@
 
 `Git` is at its most basic a Version Control System
 
-
 `Commits` are the 'saves' that occur.n GitHub we can see the commits
 
 `Respository`, a collection of files in git.
@@ -111,6 +110,21 @@ If you get an error like this :
 
 Do what it says i.e git pull origin master.
 
-## What about push, pulls and branches?
+## Pull Requests
 
-Thats going to be for a Part 2. Stayed Tuned for when I get aorund to writing it.
+
+Thisi s a bit confusing as its easy to think we are pulling FROM someone. This aint the case, its a pull **request**. We are requesting the owner of another repo to take your changes and *pull* it into thiers.
+
+This is part of a long chain where we:
+
+1. Fork thier repo into our organisation
+
+2. Clone the Repo locally so we can work on it
+
+3. Push the changes to our online repo.
+
+4. Submit a pull request.
+
+There is a nice button for it on Github. 
+
+You can still work on your code that forms part of the pull request.
