@@ -134,7 +134,9 @@ def sort_array_char_count(arr) # sort by length of each element
 end
 ```
 
+Doing just arr.sort will just do the most default version of sorting
 
+Doing `sort!` will modify the original array where as sort just performs it on a copy. Remember to be aware of what you are returning!
 
 ## Conditionals
 
@@ -326,4 +328,317 @@ There are a bunch more which might save you some time with logic.
 Hashes are a very fundemental data structure as Objects are in Javascript. So its important to be confident in your ability to traverse and manipulate them. Getting to use each for hashes is pretty cool since I don't think we have Object.foreach in JS. I NEED TO CHECK THIS!!!!!
 
 ## Object-Orientated Programming in Ruby
+
+If you don't know classes they are a blueprint that defines how an object should be built. A `food` class contains the type of information that a particular type of food should have, even though it isnt a type of food itself.
+
+We can define a class by simply writing it out:
+
+```rb
+class Food
+  # Code that defines food
+end
+```
+
+We use capital letters to store as constants and we use CamelCase if they contain multiple dogs.
+
+So lets create a new 'instance' of the class: `burger = Food.new`. Each time we use the `new` method, we instantiate a new instance. They are unique items despite being the same class.
+
+## Instance Methods
+
+So lets say we have a class called `Human`, what do humans generally do? Eat and Breath are two good bets
+
+If we create a Human class and then create a new human, it doesnt do a whole lot. To give our human some abilities we need to give it some instance methods.
+
+These are easy to do, within our class we simply define a method like so:
+
+```rb
+def eat
+  puts "Nom nom nom!"
+end
+
+adam = Human.new
+```
+
+## Instance Variables
+
+We have seen how we can give methods to an instance, but what about actual data in the form of variables.
+
+As well as our human doing things like eating, we also want to provide some information that is specfic to that human, like an age, hair colour or whatever.
+
+To provide an age to our human we need to have a:
+
+1. Setter method  `.age=` to give a human an age
+2. Getter method `.age` that allows us to access that age.
+
+So in our class we need the following:
+
+```rb
+def age=(human_age)
+  @this_human_age =  human_age
+end
+
+def age
+  @this_human_age
+end
+```
+
+Woah what are those @'s for? Well the scoping by default for variables are within the method. So the age method cant see the `this_human_age` variable normally. However by adding a `@` we turn those variables into *instance variables* that are scoped to the instance they are in.
+
+Now if we do the following, we should get the age:
+
+```rb
+eve = Human.new
+eve.age = "19"
+
+puts eve.age #19
+```
+
+So now we can give our humans both unique information and unique abilities.
+
+## Initialize
+
+The initialize (watch that `z` British people) method on a class allows us to ask for certain arguments to be passed when instantiating the class to provide it with initial data.
+
+```rb
+class Human
+  def initialize(name)
+    @name = name
+  end
+
+  def name
+    @name
+  end
+
+end
+
+lillith = Human.new("Lillith")
+lillith.name # "Lillith"
+```
+
+However this lacks the setter method from before so if we try and redefine lillith's name (`lillith.name = "Eve"`) you will get an *unknown method* error. So lets whack in the `name=` method:
+
+```rb
+  def name=(new_name)
+    @name = new_name
+  end
+  ```
+
+Now we have the ability to change the name using `.name = "whoever"`
+
+## Macros
+
+If a regular method returns a datatype (i.e. an array, integer etc.) A Macro returns code, this allows us to use that code to write other code. Clever if a little complex to get your head around.
+
+We can use macros, namely attribute readers, writers and accessors to simply the following:
+
+```rb
+class Human
+  def name=(name)
+    @name=name
+  end
+
+  def name
+    @name
+  end
+end
+```
+
+
+To this:
+
+```rb
+class Human
+  attr_reader : name
+  attr_writer : name
+end
+```
+
+But then we tend to do this quite regular so lets shorten down to:
+
+```rb
+class Human
+  attr_accessor :name, :age, :height
+end
+```
+
+
+You can imagine how many methods we need to write to do all that. This gives us setters and getters really easily by use of accessors. However you might still want to keep properties as just readers with initialised variables when they are the "root" variable by which you identify them so dont want them changed.
+
+# You must know your Self, to know OOP
+
+Self is similar to This in JS in that it is a reference an object has to its self.
+
+So, for a class, a method that uses self will reference its own instance.
+
+```rb
+def exclamation?
+    self.end_with?("!")
+ end
+```
+
+## Class Variables and Methods.
+
+`Burger` is an instance of the `Food` class.
+
+We might create an instance method to give `Burger` a method
+
+But `Food` also exists as an object can can have its own method and attributes too. Class methods are useful when it concerns all Foods, such as keeping count of all the food created.
+
+To do this we need to have variables with class scope. We can do this by doing `@@`.
+
+Much like instances, we need a method to access any information inside the class. To do this we use the self keyword:
+
+```rb
+def self.class_method_name
+  # some code
+end
+```
+
+Here, self refers to the class.
+
+Once example of how this could be used is by having an @@count variable that gets incremented each time an instance is initialised. The class method that lets us get the count would simply look like this:
+
+```rb 
+def self.count
+  puts @@count
+end
+```
+
+We can do more than just output values. A `find_by_name` method might look like this:
+
+```rb
+def self.find_by_name(name)
+  @@people.find{ |person| person.name == name }
+end
+```
+
+We can also leverage class methods to be smarter about how we create instranes. methods that do this kind of thing are known as constructors.
+
+For example instead of just instantiating via the `new` method, we can see about creating a bunch if we feed it a csv in a way that lets us make an array... here is an except of an example where we map through an array of people as hashes:
+
+```rb
+def self.new_from_array(people_array)
+  people_array.map do |new_Person|
+    name = new_Person.name
+    age = new_Person.age
+    company = new_Person.company
+
+    person = self.new
+      person.name=name
+      person.age = age
+      person.company = company
+    person
+    end
+end
+```
+
+We can also be less clever and just write aur own creation methods that lets us have a bit more control over what happens when we instantiate things.
+
+## Object Relationships
+
+We can create classes and give them data and methods, we can define relationships between them to link relevent data to each other.
+
+The first relationship we will look is `Belongs to` which simply defines that one instance class `belongs to` another. 
+
+In the real world, species lelong to a type. A leopard is a type of mammal, so a leopard `belongs to` mammals. To let a leopard belong to a mammal we just need to add the relvent accessor:
+
+```rb
+class Type
+  attr_accessor :name
+  def initialise(name)
+    @name = name
+  end
+end
+
+class Species
+  attr_accessor :name, :type
+  def initialise(name)
+    @name = name
+  end
+end
+
+mammal = Type.new("Mammal")
+leopard = Species.new("Leopard")
+leopard.type = mammal
+```
+
+However, this is a one way relationship, our leopard knows it is a mammal but if you asked mammal what species belong to it, it will have no idea. We can incorporate the `has many` Object Relationship to deal with it.
+
+For example would like to say `mammal.species` and get a list of all species, including a leopard.
+
+To do this we need to modify our Type class we used above:
+
+```rb
+class Type
+  attr_accessor :name
+  def initialise(name)
+    @name = name
+    @species = []
+  end
+
+  def add_species(species)
+    @species << species
+  end
+
+  def species
+    @species
+  end
+end # of class
+```
+
+The add species method here can take in an instance of a species and add it to the array for mammal. However, note that while the mammal says the species belongs to it, the species doesnt know it belongs to the mammal. We can sort it by adding an additional step to our add_species method:
+
+```rb
+  def add_species(species)
+    @species << species
+    species.type = self
+  end
+```
+
+The above works but it still involves us creating the species and then adding to the mammal type. We can do it all in one go by creating a method for the Type instance that takes the name as an input.
+
+```rb
+  def add_species_by_name(name)
+    new_species = Species.new(name)
+    @type << new_species
+  end
+```
+
+
+# Using Gems
+
+One of the cool things about using Ruby is the ability to leverage gems, libraries that others have put together. We can look at [rubygems.org] to find all sorts of wonderful gems.
+
+There are two ways you can use Gems:
+
+`gem install <gem>` - This installs the gem adn then requires a `require` where you wish to use it
+
+We can also just specify what we want in the Gemfile:
+
+`gem '<gem>'`
+
+However we can be clever and specify what versions we want:
+
+`'~> 2.1'` - Any minor version above this one, so 2.2 might be used but 3.0 wont be.
+
+`>= 2.4.5` - Any version greater or equal to 2.4.5
+
+Before you go anything in the gemfile you should specify a source, where the program goes to get the gems, this often is: `source "https://rubygems.org"`. Hoever we can specify a GitHub repo by addign the following to the gem request:
+
+gem 'rack', git: 'https://github.com/rack/rack'
+
+
+# Scraping 
+
+
+```rb
+require 'nokogiri'
+require 'open-uri'
+ 
+doc = Nokogiri::HTML(open("http://flatironschool.com/"))
+doc.css(".grey-text")
+
+doc.css(".grey-text").text
+ => "350+ lives changed,and counting."
+```
 

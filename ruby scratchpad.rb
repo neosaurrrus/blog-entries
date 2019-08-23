@@ -1,25 +1,53 @@
-def my_hash
-    your_hash = [ 
-        "name" => "Dave"
-        "age" => 14
-    ]
-end
+class Song
 
-def shipping_manifest
-    the_manifest = [
-        "whale bone corsets" => 5
-        "porcelain vases" => 2
-        "oil paintings" => 3
-    ]
-end
+  @@count = 0
+  @@artists = []
+  @@all_artists = []
+  @@genres = []
 
-def retrieval(shipping_manifest)
-    return shipping_manifest=["oil paintings"]
-end
+  @@artist_count = {}
+  @@genre_count = {}
 
-def adding(shipping_manifest)
-    shipping_manifest["muskets"] = 2
-    shipping_manifest["gun powder"] = 4
-    return shipping_manifest
-end
+  attr_accessor :name, :artist, :genre
 
+  def initialize(name, artist, genre)
+    @name = name
+    @artist = artist
+    @genre = genre
+
+    @@count += 1
+    @@genres.push(@genre)
+    @@artists.push(@artist)
+
+  end
+
+  def self.count
+    @@count
+  end
+
+  def self.artists
+    @@artists.uniq
+  end
+
+  def self.genres
+    @@genres.uniq
+  end
+
+  def self.artist_count
+  @@artists.each do | artist |
+    if artist_count.key?(artist)
+      artist_count["artist"] +=1
+    else
+      artist_count["artist"] = 1
+    end
+  end # end of artists.each
+  
+  @@artist_count
+  end
+
+  def self.genre_count
+
+
+  end
+
+end
