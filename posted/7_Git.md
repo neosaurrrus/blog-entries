@@ -3,7 +3,6 @@
 
 `Git` is at its most basic a Version Control System
 
-
 `Commits` are the 'saves' that occur.n GitHub we can see the commits
 
 `Respository`, a collection of files in git.
@@ -111,6 +110,56 @@ If you get an error like this :
 
 Do what it says i.e git pull origin master.
 
-## What about push, pulls and branches?
+## Pull Requests
 
-Thats going to be for a Part 2. Stayed Tuned for when I get aorund to writing it.
+
+Thisi s a bit confusing as its easy to think we are pulling FROM someone. This aint the case, its a pull **request**. We are requesting the owner of another repo to take your changes and *pull* it into thiers.
+
+This is part of a long chain where we:
+
+1. Fork thier repo into our organisation
+
+2. Clone the Repo locally so we can work on it
+
+3. Push the changes to our online repo.
+
+4. Submit a pull request.
+
+There is a nice button for it on Github. 
+
+You can still work on your code that forms part of the pull request.
+
+## Branches 
+
+Its really important to make sure that the default 'master' stays functional, if we keep making changes there is a good chance we will break it at some point in the process of making it better. For example ofr a website, we might want to redesign a given page, while it is being redesigned it wont look right, the web site vistors will cry. Branches are a way of dealing with that kind of thing.
+
+Branches are alternate realites for our code. We make a copy of 'master' work on that branch and then wwhen we are good and ready to merge it back.
+
+We start a new branch by typing `git branch <branch name>` we then can see the branch by typing `git branch`
+
+So for our example we can have a `page-redesign` branch which is a copy of the master branch. At this point, there are no changes.
+
+To work on this branch we need to **check out** the file. - `git checkout page-redesign` like checking out a book at the library. Except don't make changes to library books, thats not cool.
+
+Before you check out other branches, make sure you commit your changes! git stash might help here but we wont go into it.
+
+Using `git log`, we will eventually see that eventually the new branch has changes the master doesnt have. So lets **merge those branches** 
+
+To do this you:
+
+1. Checkout master as thats what we want to make changes to.
+
+2. Use the `git merge` command: `git merge -m "merge in feature add page-redesign"
+
+3. Use git log to confirm the commits from the new branch are now in master.
+
+4. At this point you can dleete the branch by doing `git branch -d <branch name>
+
+Lastly, to view a list of branches we just do `git fetch <remote-name>`
+
+Its a good idea to get i nthe habit of using branches for things we are working on. Working on just the master is risky and also harder to understand what changes are going on without a branch that relates to a specific area.
+
+## Conclusion
+
+
+Thats the basics of using git, at this point it starts getting a little more philosophical so thats topic to come back to another time.
