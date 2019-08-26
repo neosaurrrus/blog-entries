@@ -158,4 +158,35 @@ In the above example, we dont know hte calories so we can use a null instead.
 
 ## Count
 
-Count is an agreegate function that returns a count of items that are in a specific criteria. For example
+Count is an agregate function that returns a count of items that are in a specific criteria. For example:
+
+`SELECT COUNT name FROM food WHERE calories > 400;` 
+
+This will show the number of foods with calories over 400.
+
+## Group By
+
+This is another aggregate function that lets you see results based of of a particular column:
+
+`SELECT cuisine, COUNT(cusine) FROM food GROUP BY cuisine;`
+
+You dont need to just group by one field, you can do several as you need to.
+
+## More aggregate functions
+
+SQL has a number of aggregate functions some of which are covered below
+
+*AVG* - Returns the average value ( `SELECT AVG(calories) FROM food;`)
+*AS* - Allows an alias to be used as AVG by itself can return a non-pretty column name (`SELECT AVG(calories) AS average_calories FROM food;`)
+*SUM* - Sum of all values in a column (`SELECT SUM(calories) FROM food;`)
+*MIN/MAX* - These return the minimum and maximum values accordingly. (`SELECT MIN(calories) FROM food`)
+
+## Final note on selecting
+
+We can do `SELECT food.name` instead of  `SELECT name` this is useful if you are trying to get data from various tables that might otherwise have the same column name.
+
+
+
+
+
+
