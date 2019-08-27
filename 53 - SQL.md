@@ -51,6 +51,8 @@ SQLite uses the following:
 TEXT - Like a string
 INTEGER - A whole number
 REAL - A number like 1.3 which is a bit wierder
+BOOLEAN - true or false.
+
 BLOB - Which we dont normally need so will gloss over...
 
 However it will accept variations of these such as "INT" for "Integer" as these are used in other versions of sql.
@@ -185,8 +187,168 @@ SQL has a number of aggregate functions some of which are covered below
 
 We can do `SELECT food.name` instead of  `SELECT name` this is useful if you are trying to get data from various tables that might otherwise have the same column name.
 
+ # Table relationships
+
+Most data relates to other data. Pets have owners, Restaurants have dishes, Blog posts have authors. This is something we want to model in SQL. To do this we use the concept of a foreign key.
+
+A foreign key is a column that contains an identifer linking it to another entry in another table. 
+
+This leverages the update command plenty.
+
+Lets say we have the following food items:
+
+1. Burger
+2. Pizza
+
+In the world we are modelling you can only get them from 1 place, "Tom's Diner"
+
+We create a table called food where we enter "Burger" and "Pizza" and we create a table called restaurants where we enter "Tom's Diner" with a primary ID key (which will be 1 as its the first restaurant)
+
+Now we `ALTER TABLE` to add a "restaurant_id" column on in the food table. And we update the food items to have a restaunt ID of 1:
+
+`UPDATE food SET restaurant_id = 1 WHERE name = "Burger"`
+`UPDATE food SET restaurant_id = 1 WHERE name = "Pizza"`
+
+This now links the Food item to the Restaurant where (for some reason) is the only place you can get it.
+
+## SQL Joins
+
+So we can return the list of food of a particular restaurant_id but let's say we want to query the restaurants as well. This is where we need SQL joins.
+
+Some basic joins are:
+
+- Inner Join - Returns all rows where there is at least one match in both tables.
+- Left (Outer) Join - Returns all rows from the left table, and the matched rows from the right table
+- Right Join - Returns all rows from the right table, and the matched rows from the left table
+- Full Join - Returns all rows when there is a match in ONE of the tables
+
+## SQL Join Example
+
+Lets look at an example using foods and the cuisine it belongs. In the tables below it is assumed there is a numerical ID:
+
+This is the Cusine Table:
 
 
+|  name | Popularity  |
+|-------|-------------|
+| American |  High | 
+| Italian  | Very High  |
 
 
+And this is the Food table:
 
+
+|  name | calories  |  cuisine_id |  
+|-------|-----------|-------------|
+| Burger  |  600 |  1  | 
+| Pizza  | 700  |  2 | 
+| Pasta |  400 | 2 | 
+| Fish and Chips| 500| |
+
+So Burger should be joined to American, Pizza and Pasta to Italian and Fish and Chips...? I'll get to that later.
+Lets see how we do it...
+
+## Inner Join 
+
+Inner joins return all rows from both tables queried where a condition is met. Here is a basic example of the syntax:
+
+```sql
+SELECT column_name(s)
+FROM first_table
+INNER JOIN second_table
+ON first_table.column_name = second_table.column_name;
+```
+Those last two lines are what we need to do to make an inner join. So if we do the following:
+
+```sql
+SELECT food.name, food.calories, cuisine.name
+FROM food
+INNER JOIN cuisine
+ON food.cusine_id = cuisine.id;
+```
+
+This should return the following:
+
+|  name | calories  |  name |  
+|-------|-----------|-------------|
+| Burger  |  600 |  American  | 
+| Pizza  | 700  |  Italian | 
+| Pasta |  400 | Italian | 
+
+Having two fields called name is bit of a confuding thing so we can use the `AS` keyword to change name... `cuisine.name AS cusine_name`
+
+So what you will have noticed is that Fish and Chips didnt make it. Thats simply because it did not have a cuisine.id so it didn't fufil the criteria.
+
+So how could we include Fish and Chips? Lets have a look...
+
+## Left Outer Join
+
+Now LEFT OUTER JOIN returns ALL rowers from the first or first table regardless if they meet the condition. Anythign missed will get NULL or empty values.
+
+Here is the basic syntax:
+
+```sql
+SELECT column_name(s)
+FROM first_table
+LEFT [OUTER] JOIN second_table
+ON first_table.column_name=second_table.column_name
+```
+So its pretty much the same bar line 3.
+
+Now the output will be like this:
+
+|  name | calories  |  name |  
+|-------|-----------|-------------|
+| Burger  |  600 |  American  | 
+| Pizza  | 700  |  Italian | 
+| Pasta |  400 | Italian | 
+| Fish and Chips|  500| | 
+
+Thats how we get our fish and chips without it having a specific cusine.
+
+## Right Outer Join
+
+
+This is the opposite of left outer join, it will show all the data from the second table and what it coud match with the first. 
+
+```sql
+SELECT column_name(s)
+FROM first_table
+RIGHT OUTER JOIN second_table
+ON first_table.column_name=second_table.column_name
+```
+
+
+So if we have had a new Cuisine of *French* in the cuisine, the output will look like this:
+|  name | calories  |  name |  
+|-------|-----------|-------------|
+| Burger  |  600 |  American  | 
+| Pizza  | 700  |  Italian | 
+| Pasta |  400 | Italian | 
+|       |        | French|
+
+This is how we can see all the cuisines, even if there isnt a food associated with it.
+
+
+## Full Outer Join
+
+So this combines both Left and Right outer join to show everything basically:
+
+```sql
+SELECT column_name(s)
+FROM first_table
+FULL OUTER JOIN second_table
+ON first_table.column_name=second_table.column_name
+```
+
+And this will return something like this:
+
+  name | calories  |  name |  
+|-------|-----------|-------------|
+| Burger  |  600 |  American  | 
+| Pizza  | 700  |  Italian | 
+| Pasta |  400 | Italian | 
+| Fish and Chips|  500| | 
+|       |        | French|
+
+So thats everything! Hope that makes sense...
