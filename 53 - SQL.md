@@ -352,3 +352,88 @@ And this will return something like this:
 |       |        | French|
 
 So thats everything! Hope that makes sense...
+
+# Data Relationships in SQL
+
+Like in Ruby, there is a number of relationships data can have. We have look at the "Has Many / Belongs to" relationship. This is like the Cuisine -> Food relationship modelled above where each cuisine has a number of foods associated with it. The joins we discussed can handle that.
+
+However what about a many-to-many relationship? For example if we were to have a table called *restaurants*? A certain food may be served at multiple restaurants. For that we need something else..
+
+## Join Tables
+
+Join tables exist to hold common fields from two or more tables. This lets us create a many-to-many relationship.
+
+So, for our example lets assume there is two restuarants, **Alices** that sells Burgers, and **Bobs** that sells Burgers AND Pizza.
+
+A recap of IDs:
+
+Restaurant:
+1. Alices
+2. Bobs
+
+Food:
+1. Burger
+2. Pizza
+
+
+
+First Lets create the join table:
+
+```sql
+CREATE TABLE food_owners (
+    food_id INTEGER,
+    restaurant_id INTEGER,
+);
+```
+Then lets insert the relationships into the join table:
+
+```sql
+INSERT INTO food_restaurants(food_id, restaurant_id) VALUES (1,1);
+INSERT INTO food_restaurants(food_id, restaurant_id) VALUES (1,3);
+INSERT INTO food_restaurants(food_id, restaurant_id) VALUES (1,2);
+```
+
+## Querying Join Tables
+
+Now that we have the join table representing the relationship, we need to know how to use it to get the data we are after.
+
+First we can ask for the restaurants that serve burgers:
+
+```SQL
+SELECT food_restaurants.restaurant_id
+FROM food_restaurants
+WHERE food_id = 1;
+```
+
+This will return restaurant_id 1 and 2.
+
+However this isn't useful data as we want to know more than just IDs. This is where we can use joins
+
+## Joins on Join tables
+
+Lets run this query:
+
+```sql
+SELECT restaurant.name
+FROM restaurants
+INNER JOIN food_owners
+ON resturants.id = food_resturants.restaurant_id WHERE
+food_restaurants.food_id = 1
+```
+
+If its goign to plan we should get `Alice Bobs` as our restaurants.
+
+The first two lines are what we actually want to get but the last three lines are the rules upon which we want items returned. Basically saying get the restaurants where the restaurant id is in the join table with food id 1.
+
+Its a bit confusing but hopefully with practice it will make sense.
+
+This is the general syntax:
+
+```sql
+SELECT column(s)
+FROM table_one
+INNER JOIN table_two
+ON table_one.column_name = table_two.column_name
+WHERE table_two.column_name = condition;
+```
+
