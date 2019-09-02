@@ -437,3 +437,137 @@ ON table_one.column_name = table_two.column_name
 WHERE table_two.column_name = condition;
 ```
 
+# Adding Grouping and Sorting
+
+Lets look at some examples of grouping and sorting we would do in the real world. This time we can look at Cars and thier owners just for the sake of making it different...
+
+1. Create the Cars table
+
+```sql
+CREATE TABLE cars (
+    id INTEGER PRIMARY KEY,
+    model TEXT,
+    type TEXT,
+    top_speed INTEGER,
+    mileage INTEGER
+);
+```
+
+2. Create Owners Table:
+
+```sql
+CREATE TABLE owners (
+    id INTEGER PRIMARY KEY,
+    name TEXT
+);
+```
+
+3. Create the Cars_Owners join table
+
+```sql
+CREATE TABLE cars_owners (
+ car_id INTEGER,
+ owner_id INTEGER
+);
+```
+
+4. Lets insert some cars and owners:
+
+```sql
+-- For the Cars table
+INSERT INTO cars (id, model, type, top_speed, mileage) VALUES (1, "Ford Focus", "Hatchback", "130", 14000);
+INSERT INTO cars (id, model, type, top_speed, mileage) VALUES (1, "Seat Ibiza", "Hatchback", "120", 40000);
+INSERT INTO cars (id, model, type, top_speed, mileage) VALUES (1, "Mercedes C-Class", "Coupe", "150", 29000);
+INSERT INTO cars (id, model, type, top_speed, mileage) VALUES (1, "Nissan Juke", "SUV", "110", 33000);
+
+-- For the owners table:
+INSERT INTO owners (name) VALUES ("Alice");
+INSERT INTO owners (name) VALUES ("Bob");
+INSERT INTO owners (name) VALUES ("Charlie");
+
+--  For cars_owners
+INSERT INTO cars_owners (car_id, owner_id) VALUES (1,1);
+INSERT INTO cars_owners (car_id, owner_id) VALUES (2,2);
+INSERT INTO cars_owners (car_id, owner_id) VALUES (3,1);
+```
+
+As you can see from the above, Alice owns two cars, Bob has one, and Charlie has none.
+
+## Order By
+
+To remind ourselves the syntax for order by is as follows:
+
+```sql
+SELECT column_name, column_name
+FROM table_name
+ORDER BY column_name DESC, column_name ASC|DESC;
+```
+
+So if we care about the top speed of a car so we can select the data in various ways to highlight that:
+
+```sql
+-- Filter by a criteria
+SELECT * from cars WHERE top_speed > 130;
+-- Order by Top Speed
+SELECT * FROM cars ORDER BY (top_speed) DESC;
+```
+
+## Limit
+
+Simply ordering will show all the elements in top speed order. Sometimes we just want to see the top result or a limited subset regardless.
+
+
+This is fairly easy we just add `LIMIT X` to the end of our select statement where X is the number of entries we want:
+
+```sql
+SELECT * from cars WHERE top_speed > 130 ORDER BY(top_speed) DESC LIMIT 1;
+-- Returns the fastest car
+```
+
+## Group by
+
+Group by allows us to return values based off the result sets of agregate functions, this is the basic gist of it:
+
+```sql
+SELECT column_name,
+aggregate_function(column_name)
+FROM table_name
+WHERE column_name operator
+value
+GROUP BY column_name
+```
+
+So lets work out the total mileage of cars by owner:
+
+```sql
+SLECT owner.name
+SUM(cars.mileage)
+FROM owners
+INNER JOIN cars_owners ON owners.id = cars_owners.owner.id
+JOIN cars on cars.owners.car.id = cars.id
+GROUP BY owners.name
+```
+
+## HAVING
+
+Where we have aggregate functions (SUM, MIN, AVG) we cannot use WHERE, instead we can use HAVING while filters out groups of rows and WHERE just deals with rows:
+
+```sql
+SELECT employee, SUM(bonus) FROM employee_bonus
+GROUP BY employee HAVING SUM(bonus) > 1000;
+``` 
+
+This allows the above to work which wouldnt with WHERE. IT also is called at a different point of hte statement:
+
+```sql
+SELECT
+FROM
+JOIN
+  ON
+WHERE
+GROUP BY
+HAVING
+ORDER BY
+LIMIT
+```
+
