@@ -283,7 +283,7 @@ So how could we include Fish and Chips? Lets have a look...
 
 ## Left Outer Join
 
-Now LEFT OUTER JOIN returns ALL rowers from the first or first table regardless if they meet the condition. Anythign missed will get NULL or empty values.
+Now LEFT OUTER JOIN returns ALL rows from the first or first table regardless if they meet the condition. Anythign missed will get NULL or empty values.
 
 Here is the basic syntax:
 
@@ -540,11 +540,11 @@ GROUP BY column_name
 So lets work out the total mileage of cars by owner:
 
 ```sql
-SLECT owner.name
+SELECT owner.name
 SUM(cars.mileage)
 FROM owners
-INNER JOIN cars_owners ON owners.id = cars_owners.owner.id
-JOIN cars on cars.owners.car.id = cars.id
+INNER JOIN cars_owners ON owners.id = cars_owners.owner_id
+JOIN cars on cars_owners.car.id = cars.id
 GROUP BY owners.name
 ```
 
