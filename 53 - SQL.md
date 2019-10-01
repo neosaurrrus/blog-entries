@@ -97,7 +97,7 @@ This also works with comparison operatoris like `< >` so we can return all foods
 
 ## SQL Update
 
-Update is all about the changing of data that already exists. This is half select and half insert in a wierld way but it makes fairly logical sense if you see it written down:
+Update is all about the changing of data that already exists. This is half select and half insert in a wierd way but it makes fairly logical sense if you see it written down:
 
 ```sql
 UPDATE food SET name = 'Chicken Korma' WHERE name = 'Korma';
