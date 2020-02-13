@@ -1,6 +1,6 @@
 # Introduction
 
-Lets look at how we can make websites and dynamic applications using Ruby.
+Lets look at how we can make websites and dynamic applications using Ruby which requires learning about some of the more popular backend tooking
 
 # Rack
 
@@ -143,8 +143,200 @@ resp.status = 404`
 
 # Sinatra
 
+Sinatra is what Rails is based upon. Whereas Rails set up lots of things and is 'magic', Sinatra is lightwieght in a way that lets us see the moving pieces of a MVC (model viewer controller) app,
 
 
+## Setting up Sinatra
 
+Getting Sintra installed is as easy as typing `gem install sinatra` and from there we can create a file and start making our routes:
+
+```rb
+require 'sinatra'
+ 
+class App < Sinatra::Base
+  get '/' do
+    "Hello, World!"
+  end
+end
+```
+
+
+The app.rb file is the application controller, which handles requests to our app.
+
+
+Then we can run this by doing `rackup app.rb` (or whatever file it is called). This will set the application running and we can use a browser to view the route. However to do it propertly we'd configure Sinatra properly using a common pattern
+
+## Config.ru
+
+The first element of the pattern is config.ru which details the environment requirements of the application.
+
+```rb
+require 'sinatra'
+ 
+require_relative './app.rb'
+ 
+run Application
+```
+
+The last line refers to a ruby class application which we define on the app.js side:
+
+```rb
+class Application < Sinatra::Base
+ 
+  get '/' do
+    "Hello, World! "
+  end
+ 
+end
+```
+
+For a single controller application thats pretty much it, the app.rb file will define every single URL and response.
+
+However just returning just text all the time is a bit boring. So we can get the ERB line to call up a HTML page. You can also run commands like you would in ruby prior to that.
+
+```rb
+get '/dogs' do
+  @dogs = dogs.all
+  erb :'dogs/index.html.erb'
+end
+```
+
+### Shotgun
+
+Running an application with Rackup means that if we make changes to the code, it will not be read till we restart the server. Shotgun lets us reload as we make changes to the code and can be ran by typing 'shotgun' instead of rackup.
+
+Note that the gem needs to be installed `gem install shotgun`. If you still have issues run `bundler install` and `bundle exec shotgun`
+
+The `-p` flag will specify the port you want to run it on.
+
+
+## ERB Files
+
+So we could provide HTML as the data returned when hitting a route:
+
+```rb 
+get '/' do
+  <h1>Meow</h1>
+end
+```
+
+This isnt very practical however so we can use a templating engine, such as ERB or Embedded Ruby.
+
+If we create a file with the extension .erb we can just refer to the ERB file which contains HTML. The secret weapon of ERB files is that they allow us to use Ruby as well.
+
+We can call ERB files with the simple command : `erb :dogs`
+
+
+So we can embed ruby code into these tags but how? For that we need substitution and scripting tags.
+
+Substition tags are called with `<%=` and they will display whatever is evaluated. They are closed with `%>`
+
+Scripting tags just evaluate the code but do not display. They are caled and closed like so:
+
+```rb
+<% if user_exists %>
+  <p> User is found </p>
+<% else %>
+  <p>User Not Found!</p>
+<% end %>
+```
+
+Mixing and matching the two types of tags is essential to effeciently using ERB tags.
+
+
+## Sinatra and ActiveRecord
+
+So lets mix the two together...
+
+We know that we can Create, Read and Update and Delete in Activerecord with the following
+
+- Model.create
+- Model.all or Model.find(id_number)
+- Model.update
+- Model.destroy
+
+Lets look at how these Activerecord commands can be hooked up to the Controller and Views of Sinatra.
+
+### Create
+
+A new page might look like this:
+
+```rb
+  get '/dogs/new' do
+  erb :new
+  end
+```
+
+The form on there can have a POST request like so:
+
+```rb
+ post '/dogs' do
+  Dogs.create(name: params[:dog_name])
+```
+
+### Read
+
+We can read everything or just a specific item.
+
+For all instances of a class it should do something like this:
+
+```rb
+get '/dogs' do
+  @dogs = Dogs.all
+  erb :index
+end
+```
+
+The index page can then show all the dogs.
+
+For a specific dog we can build the route as follows:
+
+```rb
+get 'dogs/:id' do
+  @dog = Dog.find(params[:id])
+  erb :show
+end
+```
+
+### Update
+
+Before we do this we need to confure config.ru to handle patch requests by modifying the patch.ru file to allow patch requests:
+
+```rb
+use Rack::MethodOverride
+run ApplicationController
+```
+
+Now we have done that, updates falls in two parts. GETing an update form and then POSTing the results.
+
+```rb
+get "/dogs/:id/edit" do
+  erb :edit
+end
+```
+
+The form will use a patch request to patch "/dogs/:id" :
+
+```html
+<form action="/dogs/<%= @dogs.id %>" method="post">
+<input id="hidden" type="hidden" name="_method" value="patch">
+<input type "text" ... >
+</form>
+```
+
+The method override, does just that. It makes sure that the post request is changed into a patch. There is a long reason why HTML ended up like that but I cant recall it now!
+
+### Delete
+
+This doesnt need its own page but is more of an action that takes place when requested. We need a form to perform the action which will look a little like this:
+
+```html
+<form method="post" action="/dogs/<%=@dogs.id %>
+  <input id="hidden" type="hidden" name="_method" value="DELETE">
+  <input type="submit" value="delete">
+</form>
+```
+
+The hidden input makes it a delete as far as Sintra is concern.
 
 
