@@ -524,19 +524,3 @@ This is a bit of a exhaggeration as the App is pretty basic but since I fufilled
 While each piece of the app was fairly minimalist, there is alot a number of moving parts to be aware of. There is a reasonable chance bugs will have crept in. Thid does show where a proper testing strategy might be helpful..
 
 Learning Sinatra and ActiveRecord gives me the know how to build pretty much anything like this app, so its a good grounding to have before I go learn about Rails.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
