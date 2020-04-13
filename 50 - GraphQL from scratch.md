@@ -2,7 +2,7 @@ Setting up a graph QL server can be pretty complex. This is my guide to getting 
 
 # Backend
 
-I'll skip over the inital bits.
+I'll skip over the inital bits
 
 ## The very basics
 - Created Folders
