@@ -112,7 +112,13 @@ Now, looking at the diagram I can see that the challenging part, since I have ne
  While it does help to sketch out the way the app will work and look. It is a trap to focus too much on the visuals at this point, simply because you will develop that sense of what it needs to look like over time as the app builds up. An example of this is the inital dark theme I considered, I help clashed with the clean, lighter feel associated with food sites. However the final app has minimal styling simply because I wanted to complete hte project and move on but it was only when I had the app working I felt best placed to style it properly. With more time, it would be the ideal time to revise my figma style and make sure the app has its own unique but appealing styling.
 
 
-## My Models and Migrations
+# Building the App
+
+Now that I have a half-decent idea of what I was trying to build. I built it.
+
+For your sanity I wont show and comment on every file that exists in this app but I will spotlight the key parts that make the application tick. Note that I have probably have reformatted the code somewhat after writing this but hopefully the gist gets through.
+
+## Models and Migrations
 
 For the app to work I needed to create several models:
 
@@ -279,18 +285,276 @@ end
 
 I use BCrypt to hash the password so it is securely stored in the database. There is a number of validations to ensure a good quality password, it is confirmed by the user and there cant be a clash of users. 
 
+## Controllers
+
+Controllers are housing the actions the application takes. First lets look at the simpler ones:
+
+### Application Controller
+
+The application controller houses my welcome page as well as a few helper methods used in other controllers, which hopefully are fairly clear by thier names. 
+
+```rb
+class ApplicationController < ActionController::Base
+    protect_from_forgery with: :exception
+    def welcome
+    end
+
+    def require_logged_in
+        return redirect_to new_session_url unless current_user
+    end
+
+    def current_user
+        User.find_by(id:session[:user_id])
+    end
+    
+    def check_if_belongs_to_user(instance)
+        return redirect_back fallback_location: "/", alert: "You are not authorised to do this" unless instance.user_id == current_user.id
+    end
+
+end
+```
+
+I wanted to avoid doing too much in here but I think what is there isnt too heavy to make Aplication controller too 'impure'!
+
+### Categories Controller
+
+Categories are hard-coded so this is a fairly straightforward set of actions:
+
+```rb
+class CategoriesController < ApplicationController
+  def index
+    @categories = Category.all
+  end
+
+  def show
+    @category = Category.find(params[:id])
+  end
+end
+```
+
+You can see all categories or you can see more info about one. Actually since I am using nested routes (Category -> Ingredient) the Show action is redundant here as the user never gets directed there but a nested Ingredient Index page instead it uses. 
+
+### Users Controller
+
+The user controller is pretty minimal in this version of the app, once the user creates him/herself they can't change the details. This makes things simple:
+
+```rb
+class UsersController < ApplicationController
+  def new
+    @user = User.new
+  end
+
+  def create
+    @user = User.create(user_params)
+    if @user.save
+      session[:user_id] = @user.id
+      redirect_to user_path(@user)
+    else
+      render :new
+    end
+   
+  end
+
+  def show
+    @user = User.find_by(id:params[:id])
+  end
+
+  private
+  def user_params
+    params.require(:user).permit(:username,:password, :password_confirmation)
+  end
+end
+```
+
+You see we mention Session? Lets take a look at that:
+
+### Session Controller
+
+The black sheep of the family. The session controller handles both user logins via the App but also handles login via Google using OmniAuth:
+
+```rb
+class SessionsController < ApplicationController
+  def new
+  end
+
+  def create
+    # Omniauth Login
+    if auth = request.env['omniauth.auth']
+      if @authorization = Authorization.find_by_provider_and_uid(auth["provider"], auth["uid"])
+        @user = @authorization.user
+      else
+        @user = User.new(username:auth["info"]["name"], password:rand(100000000000...100000000000000000000).to_s)
+        @user.authorizations.build :provider => auth["provider"], :uid => auth["uid"]
+        @user.save
+      end
+     # Regular user login   
+    else
+      @user = User.find_by(username: params[:username])
+      @user = @user.try(:authenticate, params[:password])
+      return redirect_to new_session_url, alert: "Incorrect username and/or password" unless @user
+    end
+
+    session[:user_id] = @user.id 
+    redirect_to user_url(@user), notice: "You have sucessfully logged on"
+  end
+
+  def destroy
+    if session[:user_id] 
+      session.delete :user_id 
+    end
+    redirect_to welcome_url, notice: "You have sucessfully logged out"
+  end
+end
+```
+
+The dodgy part I have to look into is how I am generating a password for the user it creates. Since it never uses it after that point, I just needed to create something thats hard to guess. Its only when I am writing this blog I noticed my quick bodge I did probably needs a smarter solution. I'll look into it.
+
+### Ingredients Controller
+
+This is a little more complex since users can perform all CRUD actions on Ingredients:
+
+```rb
+class IngredientsController < ApplicationController
+  before_action :get_category, only: [:index, :new,:edit,:create,:update,:destroy]
+  before_action :get_ingredient, only: [:show,:edit,:update,:destroy]
+  before_action :ownership_check, only: [:edit,:update,:destroy]
+
+  def index
+  end
+
+  def show
+  end
+
+  def new
+    require_logged_in
+      @ingredient = Ingredient.new
+  end
+
+  def create
+    @ingredient = @category.ingredients.create(ingredient_params)
+    if @ingredient.save
+      redirect_to category_ingredients_url, notice: "Ingredient successfully added"
+    else 
+      render :new
+    end
+  end
+
+  def edit
+  end
+    
+  def update
+    @ingredient.update(ingredient_params)
+    redirect_to category_ingredients_url, notice: "Ingredient successfully edited"
+  end
+
+  def destroy
+    @ingredient.destroy
+    redirect_to category_ingredients_url, notice: "Ingredient successfully deleted"
+  end
+
+  private
+  def ingredient_params
+    params.require(:ingredient).permit(:name, :description, :category_id, :vegan, :vegetarian, :user_id)
+  end
+
+  def get_category
+     @category = Category.find_by(id: params[:category_id])
+  end
+  def get_ingredient
+    @ingredient = Ingredient.find_by(id: params[:id])
+  end
+
+  def ownership_check
+    check_if_belongs_to_user(@ingredient)
+  end
+
+end
+```
+
+Note the private methods and before_action's that run to reduce the duplicated code in each action. Aside from that there is nothing wierd going on here. I saved that for the...
+
+### Substitution Controller
+
+Ok, so much of the controller is like the Ingredients but something strange is happening on the Create and Update Routes:
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Woah, what is all that? That is my solution to handling what the form is throwing out in the params. Because I strongly suspect I will change this in future it is VERY unrefactored so be kind. I will go into that more in the next section I promise. 
 
 
 
+## Views
+
+So there is a whole bunch of views. If you know REST principles you can imagine what most of them do judging from the actions. But I will highlight a few more unique ones here:
+
+### THAT Substitution form
+
+The form logic is a little more complex since it needs to account for 4 variations:
+
+- Existing Original Ingredient AND Existing Sub Ingredient
+- Existing Original Ingredient AND New Sub Ingredient
+- New Original Ingredient AND Existing Sub Ingredient
+- New Original Ingredient AND New Sub Ingredient
+
+With a simpler form, I would have the know how to lean back onto Rails helpers to build a substitution and its ingredient if needed. But a substitution and TWO different ingredients? MY current Rails knowledge requires me to be a bit more blunt:
 
 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
+This esentially creates 'bespoke' params which I am forced to handle manually in the controller action. It works but I expect I will revisit this once I am informed 
 
 
+### Here's my Card(s)
+
+Because everyone on the internet likes doing it I decided to use shared partials to show Ingredients and Substitutions in little cards. The code for ingredient one looks like this:
+
+```rb
+# Ingredients Substitution Card
+<div class="card">
+            <div class="card-info">
+                <% if i.substitutions.present? %>
+                    <h3><%= link_to i.name, category_ingredient_path(c.id, i.id) %></h3>
+                    <em><%= i.substitutions.size %> substitution(s) listed.</em>
+                
+                <% else %>
+                    <h3> <%= i.name %> </h3>
+                    <em>No Substitutions available, why not <%= link_to "add one?", controller:"substitutions", action: "new" %></em>
+                <% end %>
+            
+                <p><%= i.description %></p>
+            </div>
+            <% if belongs_to_current_user(i) %>
+                <div class="card-controls">
+                <em><%= link_to "edit", edit_category_ingredient_path(c.id, i.id) %> </em> 
+                <em> <%= link_to "delete", category_ingredient_path(c.id, i.id), :method => :delete %> </em> 
+                </div>
+            <% end %>
+</div>
+
+## The Ingredient Index View that calls it:
+<h1><%= @category.name %> Ingredients</h1>
+<em><%=link_to "Add", new_category_ingredient_path(@category.id)%> a new ingredient</em>
+
+<div class="card-container">
+    <% @category.ingredients.sort_by{|i| i.name}.each do |i| %>
+        <%= render 'shared/ingredients_card',i:i, c: @category %>
+    <% end %>
+</div>
+```
+
+Why shared? Well I wanted:
+
+1. Users to see thier own ingredients and substitutions on thier show page. 
+2. Everyone to see there relevent ingredients and substitutions in a category. 
+
+This reduces the amount of duplicated code floating around.
+
+As well as the cards, I used partials for the forms to remove duplication from New and Edit routes. I also have a partial for flash messages. I suspect there is other refactors I can do in the app but these things always can be improved right?
 
 
+# Wrapping up
 
+My aim with this post is give you the edited highlights of how the app went from concept to reality. You can check it out [here](https://github.com/neosaurrrus/ingredient-substitutions). Clone it and have a play and see how it goes.
 
-
-
+In reality, the work required to make this app a real thing out in the world requires more time and love I can give it right now but maybe one day?
