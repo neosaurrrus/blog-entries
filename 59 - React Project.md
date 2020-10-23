@@ -1,94 +1,43 @@
 
 # What am I doing?
 
-This blog post is around documenting how I build my app from scratch to finish. This is for a FlatIron school project but I chose to make something that I want to exist in the world regardless.
+ My final FlatIron School project, I chose to make a tool that I have used physically but wanted a digital equivalent. Namely, planning poker.
 
-At time of writing we are all forced to stay home due to COVID, there is no restaurants open so I have been cooking alot more. However, getting ingredients is a pain due to long queues and limited stock in stores. This means that when I want to cook, I often lack the ingredients the recipie is asking for.
+ ## Hol' up, whats Planning Poker?
 
-If the recipe is asking for *kosher salt*, is regular table salt ok? Can I use white wine if I done have white wine vingar? That is the type of questions I want my app to build up a set of answers for. 
+Let's give you the Wikipedia version: 
 
-## User stories
+ >Planning poker, also called Scrum poker, is a consensus-based, gamified technique for estimating, mostly used to estimate effort or relative size of development goals in software development. In planning poker, members of the group make estimates by playing numbered cards face-down to the table, instead of speaking them aloud. The cards are revealed, and the estimates are then discussed.
 
-User stories are a way setting out what an app needs to do by associating it with what a user (or other people) will want to do.  This keeps the actual people that will interact with the app first and foremost in our minds
+Put simply, if you ever sat with a bunch of people trying to figure out how long it will take,it rarely goes well. Planning Poker is a technique to try and get honest and quick feedback without being influenced by others.
 
-The fundemental thing we want to do is **create an application where users can view and contribute ingredient substitutions**. That is our *Epic* in agile terms (really I think its multiple but let's keep it simple). So lets set out some user stories, once you got the jist of it, i'll meet you on the other side.
+I think being smart about estimating work saves a whole lot of heartache and stress so its definately something I wanted to will into the world.
+
+I did find that there is already a site for this but it does limit features unless you pay. Plus its a bit faffy with user accounts. I wanted to make something more frictionless and easy to get going.
 
 
-```
-Welcome Page -> '/home'
-- As a guest
-- I want to learn what IngredientSubstitutions.com is about
-- So I can see what substitutions I can make for a particular ingredient.
+## Main features
 
-User Signup -> '/users/new'
-- As a guest
-- I want to sign up
-- So I can submit an ingredient substitution and also make changes to them.
+At a high-level there were certain goals I wanted the app to do:
 
-Session -> '/sessions/new'
-- As a user
-- I want to login with my user credientials
-- So I dont have to keep entering my credientials everytime they are required.
+1. Create Plans that ...
+2. Allow User Stories to be created which...
+3. Team members can provide estimates via choosing a card that reflects.
+4. That card will remain 'face down' till the Moderator turns them all over.
+5. Capture the average scores for each story and the plan overall.
+6. Generally make it easy for the team to see what is going on and contribue either as a moderator or team member.
 
-View All Categories -> '/categories/index'
-- As a guest
-- I want to be able to see food categories
-- So I am able to browse to the relevent type of ingredient substitution
+That probably doesn't mean much so lets look at what I made before we dive into the technical details. (Sorry if you like things in cronological order!)
 
-View Category Ingredients -> '/categories/<category>/ingredients/index'
-- As a guest
-- I want to be able to see all the ingredients with substitutions for a given food category
-- So I am able to see the ingredients that have a substition in that category
+## The App's User Journey, in Pictures.
 
-View An Ingredient's Substitutions  -> '/categories/<category>/ingredients/<ingredient>/show'
-- As a guest
-- I want to be able to see all the substitutions for a particular ingredient
-- So I can see all the other ingredients I can use instead.
+So hopefully this will make things make alot more sense!
 
-View An Ingredient's Substitutions  -> '/categories/<category>/ingredients/<ingredient>/show'
-- As a guest vegetarian
-- I want to be able to see all the substitutions for a particular ingredient are vegetarian
-- So I can clearly see what substitutions are vegetarian.
+1. Creating a plan
 
-View An Ingredient's Substitutions  -> '/categories/<category>/ingredients/<ingredient>/show'
-- As a guest vegan
-- I want to be able to see all the substitutions for a particular ingredient are vegan
-- So I can clearly see what substitutions are vegan.
 
-Add Substitution -> 'users/<user>/substitions/new'
-- As a user
-- I want to add a new ingredient substitution
-- So I can share my substition with others
 
-View All Substitution -> 'users/<user>/substitutions/index
-- As a user
-- I want to see all the substitution I have created
-- So I can view each one as required.
 
-View A Substitution -> 'users/<user>/substitutions/<substition>/show
-- As a user
-- I want to see the substitution I have created
-- So I can confirm it is correct and share with others
-
-Edit A Substitution -> 'users/<user>/substitutions/<substition>/edit
-- As a user
-- I want to edit the substitution I have created
-- So I can amend any details that are incorrect.
-
-Delete A Substitution -> 'users/<user>/substitutions/<substition>/delete
-- As a user
-- I want to see the substitution I have created
-- So I can confirm it is correct and share with others
-
-```
-
-Phew, it is a bit hard to parse as a big list but hopefully you get the idea. It gives a reason app features and starts producing the resultant routes. In reality we should be creating user stories for the next level down, the fields we will have as well.
-
-This is for an MVP version of the application. There is more we could look at given more time and attention:
-
-1. A comment/rating system
-2. Servicing other dietary requirements
-3. Admin features to manage the content
 
 ## Rough Entity Relationship Diagram
 
