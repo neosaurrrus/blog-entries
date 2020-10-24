@@ -1,13 +1,9 @@
 
-# What am I doing?
+# What am I doing here?
 
- My final FlatIron School project, the focus was put on tying things all together that I learnt, but with a particualr focus in using React and Redux to do something cool. 
- 
-I chose to make a tool that I have used physically but wanted a digital equivalent. Namely, planning poker.
+ My final FlatIron School project, the focus was put on tying things all together that I learnt, but with a particualr focus in using React and Redux to do something cool. I chose to make a tool that I have used physically but wanted a digital equivalent. Namely, Planning Poker.
 
-
-
- ## 'Hol' up, what Planning Poker?'
+ ## 'Hol' up, whats Planning Poker?'
 
 Let's give you the Wikipedia version because it sounds clever: 
 
@@ -35,7 +31,7 @@ That probably doesn't mean much so lets look at what I made before we dive into 
 
 ## The App's User Journey, in Pictures.
 
-Here's a link to my video walkthrough which is even better than pictures. But hopefully this makes things clear:
+I have a quick [video walkthrough](https://youtu.be/JEKTo7outMw) which is even better than pictures. But hopefully this makes things clear if you dont fancy video watching:
 
 1. Creating a plan
 
@@ -128,180 +124,97 @@ I created nested routes so that the api endpoints made sense, something like: `<
 
 The models and controllers mostly align to standard REST practises, with each action sending back datain JSON for things to be picked up by the Front End. So let's talk about... 
 
-
 ## React, Yay! 
 
 I used create-react-app to get things going. The component tree is a little like this under the 'catch-all' App container:
 
 ![Component Tree](./pics/59/5-components.png)
 
-With a few minor components thrown in. How does that relate to reality? Let me deface another screenshot:
+With a few minor components thrown in at the bottom. How does that relate to reality? Let me deface another screenshot:
+
+![Visual Components](./pics/59/6-visual-components.png)
+
+As you can see a bunch of data needs to flow between these components. For that we have...
 
 
+## Redux and Fetching
 
+I have to admit, I wasn't that confident with Redux prior ot the project and even now it is full of traps and things to just forget. 
 
+In order to try and keep things clear I set up three files to my actions:
 
-## Views
+- PlanActions
+- StoryActions
+- PlayerActions
 
-So there is a whole bunch of views. If you know REST principles you can imagine what most of them do judging from the actions. But I will highlight a few more unique ones here:
+Here is an example of an action:
 
-### THAT Substitution form
-
-The form logic is a little more complex since it needs to account for 4 variations:
-
-- Existing Original Ingredient AND Existing Sub Ingredient
-- Existing Original Ingredient AND New Sub Ingredient
-- New Original Ingredient AND Existing Sub Ingredient
-- New Original Ingredient AND New Sub Ingredient
-
-With a simpler form, I would have the know how to lean back onto Rails helpers to build a substitution and its ingredient if needed. But a substitution and TWO different ingredients? 
-
-MY current Rails knowledge requires me to be a bit more blunt:
-
-
-```html
-<% if @substitution.errors.any? %>
-  <div id="error_explanation">
-    <h3 class="error-text">
-      <%= pluralize(@substitution.errors.count, "error") %>
-      prohibited your substitution from being created:
-    </h3>
- 
-    <ul>
-    <% @substitution.errors.full_messages.each do |message| %>
-      <li><%= message %></li>
-    <% end %>
-    </ul>
-  </div>
-<% end %>
-
-<%= form_for @substitution do |s| %>
-
-    <div class="form-section">
-        <h2>Existing Original Ingredient</h2>
-        <em>What are you swapping out?</em>
-        <%= s.collection_select :original_id, Ingredient.ordered_by_name, :id, :name , :prompt => 'Select or add new Ingredient below' %><br>
-
-            <h4> New original ingredient</h4>
-            <strong>Ingredient:</strong>
-                <%= s.fields_for :ingredient_original do |i| %>
-                    <%= i.hidden_field :user_id, :value => current_user.id %>
-                    <%= i.label :name %>
-                    <%= i.text_field :name %>
-                    <%= i.label :description %>
-                    <%= i.text_field :description %>
-                    <%= i.label :vegan %>
-                    <%= i.check_box :vegan %>
-                    <%= i.label :vegetarian %>
-                    <%= i.check_box :vegetarian %>
-                    <%= i.collection_select :category_id, Category.ordered_by_name, :id, :name, :prompt => 'Select or add a new Category' %>
-                <% end %>
-    </div>
-            
-
-        <div class="form-section">
-        <h2>Substitution Ingredient</h2>
-        <em>What are you swapping in?</em>
-        <%= s.collection_select :sub_id, Ingredient.ordered_by_name, :id, :name, :prompt => 'Select or add new Ingredient below'%><br>
-            <h4> New substitution ingredient</h4>
-            <strong>Ingredient:</strong>
-                <%= s.fields_for :ingredient_sub do |i| %>
-                        <%= i.hidden_field :user_id, :value => current_user.id %>
-                    <%= i.label :name %>
-                    <%= i.text_field :name %>
-                    <%= i.label :description%>
-                    <%= i.text_field :description%>
-                    <%= i.label :vegan %>
-                    <%= i.check_box :vegan %>
-                    <%= i.label :vegetarian %>
-                    <%= i.check_box :vegetarian %>
-                    <%= i.collection_select :category_id, Category.ordered_by_name, :id, :name, :prompt => 'Select or add a new Category' %>
-                <% end %><br>
-    </div>
-
-    <div class="form-section">  
-            <h2>Other Details</h2>
-            <%= s.hidden_field :user_id, :value => current_user.id %>
-            <%= s.label :same_quantity, "Should you use a 1:1 ratio?"%>
-            <%= s.check_box :same_quantity %><br>
-            <%= s.label :description, "Provide futher details if needed" %><br>
-            <%= s.text_field :description %><br>
-            <%= s.label :issues, "Any issues to consider?" %><br>
-            <%= s.text_field :issues %><br>
-            <%= s.submit "Submit Substitution" %>
-    </div>
-<% end %>
+```js
+export const getPlan = (url) => {
+    return (dispatch) => {
+        dispatch({ type: 'LOADING_PLANS'})
+    fetch(`http://localhost:3000/plans/${url}`)
+    .then(resp => resp.json())
+    .then(res => {
+        dispatch({type: 'GET_PLAN', plan: res})
+          })
+    .catch(err => console.log(err))
+    }
+}
 ```
 
+And the resulting part of the reducer (I actually had one reducer as what actually needed to come back via state was actually less varied.)
 
-This esentially creates 'bespoke' params which I am forced to handle manually in the controller action. It works but I expect I will revisit this once I am informed 
-
-
-### Here's my Card(s)
-
-Because everyone on the internet likes doing it I decided to use shared partials to show Ingredients and Substitutions in little cards. The code for ingredient one looks like this:
-
-```rb
-# Ingredients Substitution Card
-<div class="card">
-            <div class="card-info">
-                <% if i.substitutions.present? %>
-                    <h3><%= link_to i.name, category_ingredient_path(c.id, i.id) %></h3>
-                    <em><%= i.substitutions.size %> substitution(s) listed.</em>
-                
-                <% else %>
-                    <h3> <%= i.name %> </h3>
-                    <em>No Substitutions available, why not <%= link_to "add one?", controller:"substitutions", action: "new" %></em>
-                <% end %>
-            
-                <p><%= i.description %></p>
-            </div>
-            <% if belongs_to_current_user(i) %>
-                <div class="card-controls">
-                <em><%= link_to "edit", edit_category_ingredient_path(c.id, i.id) %> </em> 
-                <em> <%= link_to "delete", category_ingredient_path(c.id, i.id), :method => :delete %> </em> 
-                </div>
-            <% end %>
-</div>
-
-## The Ingredient Index View that calls it:
-<h1><%= @category.name %> Ingredients</h1>
-<em><%=link_to "Add", new_category_ingredient_path(@category.id)%> a new ingredient</em>
-
-<div class="card-container">
-    <% @category.ingredients.sort_by{|i| i.name}.each do |i| %>
-        <%= render 'shared/ingredients_card',i:i, c: @category %>
-    <% end %>
-</div>
+```js
+ case 'GET_PLAN':
+  return {...state, 
+          plan: action.plan, 
+          stories: action.plan.stories,      
+          loading: false
+      } 
 ```
 
-Why shared? Well I wanted:
-
-1. Users to see thier own ingredients and substitutions on thier show page. 
-2. Everyone to see there relevent ingredients and substitutions in a category. 
-
-This reduces the amount of duplicated code floating around.
-
-As well as the cards, I used partials for the forms to remove duplication from New and Edit routes. I also have a partial for flash messages. I suspect there is other refactors I can do in the app but these things always can be improved right?
+This was a similar pattern I used. However this meant I was pulling back more than I actually needed. With further rewrites I would consider slimming down my redux reducer actions.
 
 
-# Wrapping up
+## Difficulties
 
-My aim with this post is give you the edited highlights of how the app went from concept to reality. You can check it out [here](https://github.com/neosaurrrus/ingredient-substitutions). Clone it and have a play and see how it goes. But here are some pictures to tide you over:
+There were a few things that really gave me a headache in the making of this app. The general problem is that there is alot of things working in tandem (React, Redux, Rails, Database) so a problem in one place can manifest elsewhere, getting my head around the long chain of events was key to solving many of these.
 
-The categories Index page:
-![categories](https://github.com/neosaurrrus/blog-entries/blob/master/pics/58_2_categories.png)
+### Fetching and Displaying Content Async issues
 
-The Ingredients Index page:
-![Ingredients](https://github.com/neosaurrrus/blog-entries/blob/master/pics/58_3_ingredients.png)
+Much of the app releis on grabbing something from the database, React doesnt want to wait and tries to render without having things loaded. This causes plenty of errors when it cannot find it. My general solution was to place conditionals checking if a certain thing exists before proceding. In other places, default props are useful. After some reflection, the loading action in the Redux reducer should habve been utilised more. Many of my actions use the same loading action, which causes it to alternate from loading and not loading for various actions. with seperate actions this would havbe been an elegent way to solve this.
 
-The Ingredient Show page showing the Substitutions:
-![substitutions](https://github.com/neosaurrrus/blog-entries/blob/master/pics/58_3_substitution.png)
+### Single Version of Truth
 
-The substitution form:
-![substitution form](https://github.com/neosaurrrus/blog-entries/blob/master/pics/58_3_substitution_form.png)
+Getting my head around Redux let to many situations where I was doing work on a 'local copy' of the variable. I was sending the result back to state but I was not picking it back from state, kind of like an uncontrolled input. This meant I wasn't getting the changed values in other places that needed it. This sounds somewhat simple now but at the time it was pretty hard to diagnose!
+
+### Layout and Responsive Design
+
+To be honest, this wasn't as bad as the other two but I tend to quietly avoid multiple column app designs as they can be harder for a mobile device. However for this app, I wanted the user to see the key details they needed without having to scroll. Having a dynamic font-size (thanks create-react-app) and using CSS grid helped gracefully adjust as needed. Where scrolling is needed, it is kept within the individual components
+
+### React Router
+
+The difficulty here is in the fact that version and 4 of react router are somewhat different. This led to some very confusing googling. I also find the way I have implemented it quite cluttered and 'unnatural'. I am sure that is mostly how I have been using it but still it was a little trickly getting used to the methods it lets you go to town with.
+
+### Updating Elements without Refreshing
+
+This wasn't too bad either but as multiple users could be on the url at the same time. I needed to make sure they were all seeing the same thing. This required sending key events (like cards being revealed)to the database where everyone could pick it up from. In order to make it realtime, I used server polling with setTimeout, so the Front End keeps checking if anything has changed even if a particular user hasnt done anything, another use might have. This isn't a particular elegant way of doing it but it does the job, to do this properly requires looking into things such as websockets which is for another time!
+
+## Things that helped
+
+So with the above issues in mind, here is things I used to get me through the madness:
+
+**Debugger/Binding.pry** - Throwing 'debugger' (or binding.pry) in my code. This freezes the running in place that lets me query the variables in play. When the fault could be in the React Code, The Redux Actions, The Reducer or in the Rails Backend. Finding out roughly where things are going wrong is an important first step.
+
+**React Dev Tools** - This gives a map of the components used you can browse, much like the Elements view on Chrome Dev Tools. More importantly, it reports back the state and props each component has. This was useful when things were not reaching a component like I helped.
+
+**Redux Dev Tools** - This is a more complex beast but the state tab was the key one. Letting me see what what actually coming back via state was a key part of understanding the chain.
+
+**Slow Down!** - As I have mentioned, there is so many steps in order to get something and put it on the screen. My approach for most of it was adding the react code, adding the redux code, adding the backend code and seeing what happens. When it invariably breaks, I then have no idea what bit went wrong. Later on, I got smarter and instead wrote each step, tested, and then moved on. When things go wrong, there is far less possibility space where things could have gone wrong by checking things step by step. Some things still slip through but overall, it save me a few future headaches taking my time and checking
+
+## Conclusion
+
+You can see the app itself [here](https://github.com/neosaurrrus/prompt-planning-poker). At time of writing I havent done much in the way of refactoring or formatting so I am hoping it is a little slimmer and better looking should you have a look. Though seeing the crazy things I tried to get things working is probably quite amusing too! I tried to make this app something that actually can fly in the real world, I am hoping to make further work on the UI and its robustness and get it hosted, I am a big fan of apps that just work without needing to set up an account or an unecessary amount of form filling/clicks. There is a sister app called Invitely which is fairly similar which is worth a blog post at some point!
 
 
-In making this app, I reinforced alot of the conceptual things I have learnt with a practical example. It also has given me a whole heap of extra things I would like to try adding.
-
-In reality, apart from refactors and minor tweaks, the work required to make this app a real thing out in the world requires more time and love I can give it right now but maybe one day? I think the idea is a good one!
