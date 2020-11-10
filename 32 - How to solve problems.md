@@ -1,12 +1,8 @@
-We have all been stuck on things. Let's think about how to think about things
+This post is all about how I tackle a coding algorithms, lets say for a coding challenge or interview. How I think might be brilliant for you, it might just make you angry. Who knows, but we know we can always rely on the Internet to offer constructive feedback and support!
 
 # What is an algorithm
 
-A set of steps to accomplish a certain task. A process map for code.
-
-Most things in code involves algorithms.
-
-How do you figure out what to do?
+A set of steps to accomplish a certain task. A process map for code a business analyst would say. Most things in code involves algorithms so how do you figure out what to do?
 
 Some people are better at solving problems than others but everyone can learn.
 
@@ -14,7 +10,7 @@ Step 1: Make a plan for solving a problem
 
 Step 2: Master common problem solving patterns
 
-Problem Solving
+# Problem Solving Steps
 
 1. Understand the problem
 2. Explore Concrete Examples
@@ -22,34 +18,36 @@ Problem Solving
 4. Solve/Simplify
 5. Look back and refactor
 
-# Figure out the problem
+# 1. Figure out the problem
 
 Before we can solve the problem, we must first need to understand what we need to do. Investigate the requirements and ask questions.
 
-1. Can you restate the problem in your own words?
-2. What are the inputs that go into the problem
+1. Can you restate the problem in your own words? 
+2. What are the inputs that go into the problem?
 3. what are the outputs that should come from the solution to the problem problem? What does it look like?
 4. Can the outputs be figured out from the inputs? (if you can figure that out at this stage)
 5. How can I label the important pieces of data that are a part of the problem? What matters here to solve the problem?
 
-# Come Up With Examples
+If you can't do the above before leaping into code. It is likely going to give you a bad day!
 
-Basically plug in some default values to see what you expect. These are effecitivley user stories, given a particular input what is our output?
+# 2. Come Up With Examples
 
-You shouldnt do this willy-nilly, but consider the following scenarios, in a function that just adds two numbers
+Basically plug in some default values to see what you expect. These are effectivley user stories: given a particular input what is our output?
+
+You shouldnt do this willy-nilly, but consider the following scenarios, in a designing a function that just adds two numbers:
 
 - Simple examples (2,2)
 - Complex Example ( 20000.54 + 200000000.32 )
 - Empty inputs ( 2, )
 - Invalid Inputs (2, "fish")
 
-Also consider how the output should be presented. Should it just be the value, does it it need rounding, does it need to come back in a string etc?
+Also consider how the output should be presented. Should it just be the value? does it need rounding? does it need to come back in a string etc?
 
 Playing around with examples, is an extension of understanding the problem and might help uncover some key things to pay attention to when building your solution.
 
-In my experience, people are very good at telling you what they want, but even better at thinking they have given you all the details you need to deliver. Don't be afraid to ask those dumb questions as it will save you time in the long run!
+In my experience, people are very good at telling you what they want, but even better at thinking they have given you all the details you need to deliver. *Don't be afraid to ask those dumb questions as it will save you time in the long run!*
 
-Final point, when we are focused on learning we tend to ignore most edge cases to focus on something specific. This is why I won't be following this advice in my blog posts! Just remember real life production systems are not as forgiving!
+Final point, when we are focused on learning we tend to ignore most edge cases to focus on the solving the core problem. This is true in most of my blog posts! Just remember real life production systems are not as forgiving so consider all angles.
 
 # Break it Down
 
@@ -72,15 +70,15 @@ function addNumbers(a, b){
 }
 ```
 
-I like to think this is something we all do. This is really handy for an observer (say, an interviewer) to know what you are thinking about when you are code.
+ This is really handy for an observer (say, an interviewer) to know what you are thinking about when you are code.
 
 # Lets solve it, or make it simpler!
 
-So now that you have an idea of HOW you can do it, try and solve it! If you can great but if you can't... try to solve a simplified version of it.
+So now that you have an idea of HOW you can do it, try and solve it! If you can, great! but if you can't... try to solve a simplified version of it.
 
 Obviously you want to solve it. However the logic behind simplfying is that it lets you begin exploring the issue and may trigger some further understanding.
 
-When you are simplfying you cna use the following steps:
+When you are simplfying you can use the following steps:
 
 - Identify the tricky part of what you are trying to do.
 - Ignore that tricky part
@@ -91,7 +89,7 @@ When you are simplfying you cna use the following steps:
 Some examples of simplifying
 
 - If you have an array to interate through, just try and make a solution for just the first element.
-- If you can't recall a method (for rounding a number, say) just refer to it in your comments and leave it for now.
+- If you can't recall a method (for rounding a number, say) just refer to it in your comments and see if you can research it later (if you can't figure it out in a minute or two)
 
 # Look back and Refactor, I heard you say...
 
