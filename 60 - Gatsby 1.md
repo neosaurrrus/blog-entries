@@ -546,7 +546,7 @@ We better go make something to look at here then.
 
 The empty schema message will link to a [guide](https://www.sanity.io/docs/content-modelling). This a good step by step guide that provides more detail than I will type here. But I will go over what I did below.
 
-Since I have a hypothetical restaurant site, I want to store content regarding the meals that are served. 
+Since I have a hypothetical restaurant site, I want to store content regarding the dishes that are served. 
 
 In the `schemas` folder, I create a new schema called `dish.js`. This file exports an object defining what a *dish* actually is. hopefully it makes sense with my comments: 
 
@@ -579,6 +579,62 @@ Hopefully you begin to see how multiple schemas can be built up in this fashion.
 
 Let's hop back to Sanity Studio. If all has gone well we can see we have Dishes on the left hand side. But no content. We can fix that by clicking the new icon in the right hnd size and add our first Dish! 
 
-![Fish and Chips](https://github.com/neosaurrrus/blog-entries/pics/60/1.png)
+![Fish and Chips](https://github.com/neosaurrrus/blog-entries/blob/master/pics/60/1.png?raw=true)
 Of course it isn't all that interesting just storing the names of dishes, so once you are happy it works as intended you can delete it via the menu in the bottom right hand side. 
+
+
+## Let's make it better, 
+
+Well the possibilities are limitless at this point. The Sanity docs are really good for figuring out how to build upon it but here is what I did:
+
+```js
+export default {
+  name: 'dish',
+  title: 'Dishes',
+  icon: () => '🥣', // Lets give it a cool icon!
+  type: 'document', //
+  fields: [
+    {
+      name: 'name',
+      title: 'Dish Name',
+      type: 'string',
+      description: 'Name of the Dish',
+    },
+    {
+      name: 'price',
+      title: 'Price',
+      type: 'number',
+      description: 'Price of dish in pence',
+      validation: (Rule) => Rule.min(99).max(10000), // Limits what can be entered for price
+    },
+    {
+      name: 'image',
+      title: 'Dish Image',
+      type: 'image',
+      options: {
+        hotspot: true, // clever thing that lets us edit where to focus the picture when resizing
+      },
+    },
+    {
+      // Add a slug to deal with pesky spaces in names
+      name: 'slug',
+      title: 'slug',
+      type: 'slug',
+      options: {
+        source: 'name',
+        maxLength: 50,
+      },
+    },
+  ],
+};
+```
+
+Which results in:
+
+
+![Fish and Chips](https://github.com/neosaurrrus/blog-entries/blob/master/pics/60/2.png?raw=true)
+
+
+Starting to look tasty! But lets start getting clever and look at some related data.
+
 
