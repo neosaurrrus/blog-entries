@@ -1,6 +1,6 @@
 This is a series of Blog posts that follow me as I learnt about using Gatsby . There will be a focus on all the landmines I step on along the way to make sure they can be learnt from!
 
-The main font of knowledge comes from Wes Bos' Master-Gatsby course. Is it any good? I don't know but lets see if I figure it out as I progress through!
+The main font of knowledge comes from [Wes Bos' Master-Gatsby course](http://mastergatsby.com). Is it any good? I don't know yet but lets see if I figure it out as I progress through.
 
 In this post we will:
 
@@ -475,4 +475,110 @@ This is a fairly short one but hopefully enough to get you started with CSS in a
 
 
 
-Part 4 
+
+# Figuring out Gatsby - A detour to the world of Sanity.
+
+In my previous posts I have discussed:
+
+1. Setting up Gatsby
+2. Making Pages
+3. Styling those pages
+
+That is enough for a basic site, but if we need to make something a little more dynamic we need a:
+
+ - Database to keep data that can be changed
+ - Way of changing whats in the database
+ - Way to show what we have in the database on our pages.
+
+
+ The cool kids call this a Backend, and this is something that one can decidicate a whole career to building out. We will not do this, we will use something called Sanity.
+
+ ## What the hell is Sanity? 
+
+ Sanity is a headless CMS. Headless just means that it doesn't have a frontend for users to see whats there, thats what we have Gatsby for. CMS stands for Content Management System which is a system that manages content 😸... fine, its a tool that handles all ways we can change data, primarily... Create, Read, Update, Delete. AKA CRUD.
+
+ There is a whole bunch of headless CMSes on the market, some cater for simplicity, some for more control. Sanity is a good mix of the two, and the general priniciples here should work more or less whatever you use.
+
+ In a hypothetical restaurant app, we will have a bunch of meals in the menu, menus change often. We don't want this to be a hassle, we might even want something that a semi-skilled client could manage without you. This is why have a CMS to make this smooth is a good idea. However it doesn't mean that setting it up is all that easy. So lets walk through it.
+
+
+
+## How do I get some of this Sanity?
+
+You can probably figure most of it out by following the guidence on the [Sanity Website](https://create.sanity.io/). 
+
+I am going to focus on getting it up and running via the command line.
+
+### Step 1 - Install Sanity CLI and Initialise
+
+This is as simple as typing `npm install -g @sanity/cli && sanity init`
+
+This is will get it installed globally and the second command will initialise an blank Sanity instance in the location you are in.
+
+You can check it is all version as intended with a `sanity --version`.
+
+
+Once you have the starter files up and running to can
+
+### Step 2 - Reconfigure
+
+Its time to introduce yourself to Sanity.
+
+First, type `sanity init --reconfigure` and it will prompt you to create an account with Sanity (unless you have done this before). Its a fairly straighforward process that can use GitHub or Google as authentication providers to make it easier.
+
+Second, give your project a name.
+
+
+Thirdly it will ask if you want a private or public dataset, and allows you to set up different datasets for testing etc. For your first time stick to the default which sets up a public production dataset.
+
+
+### Step 3 - Intro to Sanity Studio
+
+We have everything set up, so we can type `npm start` or `sanity start` and if all has gone well it will tell you Sanity is running on localhost: 3333. If you open that in your browser, you will be prompted to logon and.... 
+
+
+It will tell you that you have an empty schema. How dull.
+
+We better go make something to look at here then.
+
+### Step 4 - Our first schema
+
+
+The empty schema message will link to a [guide](https://www.sanity.io/docs/content-modelling). This a good step by step guide that provides more detail than I will type here. But I will go over what I did below.
+
+Since I have a hypothetical restaurant site, I want to store content regarding the meals that are served. 
+
+In the `schemas` folder, I create a new schema called `dish.js`. This file exports an object defining what a *dish* actually is. hopefully it makes sense with my comments: 
+
+```js
+export default {
+  name: 'dish', // what sanity will know it as
+  title: 'Dishes', // what we see it called in Sanity Studio
+  type: 'document', // We will get to this later, document will do for now
+  fields: [
+    // what fields does a dish have?
+    {
+      name: 'name', // What Sanity will know it as
+      title: 'Dish Name', // What we see it called in Sanity Studio
+      type: 'string', // The datatype, this could be lots of things.
+      description: 'Name of the Dish', // Just explains what the field is.
+    },
+  ],
+};
+```
+
+
+Once we have the dish schema set up, we need to add it to the overall schema.js file with a `import dish from './dish` and modifying the *createSchema* object as follows:
+
+`types: schemaTypes.concat([dish]),`
+
+Hopefully you begin to see how multiple schemas can be built up in this fashion.
+
+
+### Step 5 - Bask in our incredible Back End skills
+
+Let's hop back to Sanity Studio. If all has gone well we can see we have Dishes on the left hand side. But no content. We can fix that by clicking the new icon in the right hnd size and add our first Dish! 
+
+![Fish and Chips](https://github.com/neosaurrrus/blog-entries/pics/60/1.png)
+Of course it isn't all that interesting just storing the names of dishes, so once you are happy it works as intended you can delete it via the menu in the bottom right hand side. 
+
