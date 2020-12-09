@@ -302,9 +302,9 @@ It looks a bit dull though, so lets dicuss CSS with Gatsby in the next post!
 
 # Learning Gatsby - CSS in Gatsby with Styled Components
 
-This is part 3 of my Gatsby series start XXXXX for it to make more sense!
+This is part 3 of my Gatsby series start XXXXX for it to make more sense! This is all about getting our plain Gatsby pages looking a little nicer using modern approaches as we go. 
 
-First of all, if you just want to create a CSS file in your layouts.js and link to it, you sure can. There is nothing stopping you in Gatsby. But like with alot of Gatsby, there is a better way that allows Gatsby to do things smarter. For Gatsby to do that, it needs to be made aware of the CSS by importing it.
+First of all, if you just want to create a CSS file in your layouts.js and link to it, you sure can. There is nothing stopping you in Gatsby. But like with alot of Gatsby, there is a better way that allows Gatsby to do things smarter. For Gatsby to do that, it needs to be made aware of the CSS by importing it in specially.
 
 There is lots of ways to do this:
 
@@ -588,6 +588,8 @@ Of course it isn't all that interesting just storing the names of dishes, so onc
 Well the possibilities are limitless at this point. The Sanity docs are really good for figuring out how to build upon it but here is what I did:
 
 ```js
+import { check } from 'prettier';
+
 export default {
   name: 'dish',
   title: 'Dishes',
@@ -599,6 +601,24 @@ export default {
       title: 'Dish Name',
       type: 'string',
       description: 'Name of the Dish',
+    },
+    {
+      name: 'vegetarian',
+      title: 'Vegetarian',
+      type: 'boolean',
+      description: 'Is it Vegetarian?',
+      options: {
+        layout: 'checkbox',
+      },
+    },
+    {
+      name: 'vegan',
+      title: 'Vegan',
+      type: 'boolean',
+      description: 'Is it Vegan?',
+      options: {
+        layout: 'checkbox',
+      },
     },
     {
       name: 'price',
@@ -626,7 +646,20 @@ export default {
       },
     },
   ],
+  preview: {
+    select: {
+      name: 'name',
+      vegetarian: 'vegetarian',
+      vegan: 'vegan',
+    },
+    prepare: (fields) => ({
+      title: `${fields.name} ${
+        fields.vegan ? '- 🌱  Ve' : fields.vegetarian ? '-🍆 Veg' : '' //Nesting Ternaries is a naughty thing to do btw.
+      }`,
+    }),
+  },
 };
+
 ```
 
 Which results in:
@@ -635,6 +668,53 @@ Which results in:
 ![Fish and Chips](https://github.com/neosaurrrus/blog-entries/blob/master/pics/60/2.png?raw=true)
 
 
-Starting to look tasty! But lets start getting clever and look at some related data.
+Starting to look tasty! Note that we:
 
+- Added Vegan and Vegetarian Options (and somehow I decided Fish and Chips was vegetarian)
+- Added a preview property that lets us get some of the info without having to go into it. 
+
+But lets start getting even more clever and look at some related data.
+
+
+## Relational Data with a Second Content Type
+
+Ok cool, we have some dishes in our restaurant but we don't want our customers with special dietary requirements to be worried about what we are serving up so we want capture data around use of dairy, nuts, gluten. That sort of thing.
+
+ Multiple dishes might have dairy products in and maybe later we could filter out dairy products from the menu. To do this and save effort in the long run. it needs to exist as a seperate content type rather than just be a piece of info buried within each dish.
+
+A dish can fit many intolerances, i.e it could have Gluten and Shellfish. So we call this a one to many relationship as ONE dish may have MANY ingredients that we care about.
+
+Ok so first we need a new schema, called `intolerance.js` and we want to keep it fairly simple at first: 
+
+```js
+
+```
+
+Don't forget to add to the schema.js file as before:
+
+`types: schemaTypes.concat([dish, intolerence]),`
+
+
+### Linking it up
+
+Now that we have done that we need to link dishes to thier intolerences. This requires us to make an addition to the pizza shema:
+
+```js
+  {
+      name: 'Intolerences',
+      title: 'Contains',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'intolerance' }] }],
+    },
+```
+
+So what are we doing here? We are adding an array to our dish schema, and then we are saying that array will contain *references* to our intolerences. This results in the following:
+
+![Fish and Chips](https://github.com/neosaurrrus/blog-entries/blob/master/pics/60/3.png?raw=true)
+
+
+Its  bit fiddly in the UI but allows us to link our previously created intolerences to our item. This isn't the most complex data ever for the sake of a short blog post but its easy to see how this can be developed.
+
+
+## Customising our Inputs
 
