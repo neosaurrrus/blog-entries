@@ -476,7 +476,7 @@ This is a fairly short one but hopefully enough to get you started with CSS in a
 
 
 
-# Figuring out Gatsby - A detour to the world of Sanity.
+# Figuring out Gatsby #4 - A detour to the world of Sanity.
 
 In my previous posts I have discussed:
 
@@ -492,6 +492,8 @@ That is enough for a basic site, but if we need to make something a little more 
 
 
  The cool kids call this a Backend, and this is something that one can decidicate a whole career to building out. We will not do this, we will use something called Sanity.
+
+ If you like using something else for data, thats cool, Gatsby doesn't really care too hard about what you use but for the app I am building, thats what I will be using. The concepts in later posts are pretty transferable.
 
  ## What the hell is Sanity? 
 
@@ -518,7 +520,7 @@ This is will get it installed globally and the second command will initialise an
 You can check it is all version as intended with a `sanity --version`.
 
 
-Once you have the starter files up and running to can
+Once you have the starter files up and running, you wierdly should init again..
 
 ### Step 2 - Reconfigure
 
@@ -529,12 +531,12 @@ First, type `sanity init --reconfigure` and it will prompt you to create an acco
 Second, give your project a name.
 
 
-Thirdly it will ask if you want a private or public dataset, and allows you to set up different datasets for testing etc. For your first time stick to the default which sets up a public production dataset.
+Thirdly it will ask if you want a private or public dataset, and allows you to set up different datasets for testing etc. For your first time stick to the default which sets up a public production dataset but this is important to know for real life.
 
 
 ### Step 3 - Intro to Sanity Studio
 
-We have everything set up, so we can type `npm start` or `sanity start` and if all has gone well it will tell you Sanity is running on localhost: 3333. If you open that in your browser, you will be prompted to logon and.... 
+We have everything set up, so we can type `npm start` or `sanity start` and if all has gone well it will tell you Sanity is running on localhost:3333. If you open that in your browser, you will be prompted to logon and.... 
 
 
 It will tell you that you have an empty schema. How dull.
@@ -687,6 +689,20 @@ A dish can fit many intolerances, i.e it could have Gluten and Shellfish. So we 
 Ok so first we need a new schema, called `intolerance.js` and we want to keep it fairly simple at first: 
 
 ```js
+export default {
+  name: 'intolerance',
+  title: 'Dietary Intolerances',
+  icon: () => '⚠️',
+  type: 'document',
+  fields: [
+    {
+      name: 'name',
+      title: 'Name',
+      type: 'string',
+      description: 'Name of the Dietary Tolerance',
+    },
+  ],
+};
 
 ```
 
@@ -715,6 +731,167 @@ So what are we doing here? We are adding an array to our dish schema, and then w
 
 Its  bit fiddly in the UI but allows us to link our previously created intolerences to our item. This isn't the most complex data ever for the sake of a short blog post but its easy to see how this can be developed.
 
+My final (At least for now) dish schema looks like this:
+
+```js
+export default {
+  name: 'dish',
+  title: 'Dishes',
+  icon: () => '🥣', // Lets give it a cool icon!
+  type: 'document', //
+  fields: [
+    {
+      name: 'name',
+      title: 'Dish Name',
+      type: 'string',
+      description: 'Name of the Dish',
+    },
+    {
+      name: 'vegetarian',
+      title: 'Vegetarian',
+      type: 'boolean',
+      description: 'Is it Vegetarian?',
+      options: {
+        layout: 'checkbox',
+      },
+    },
+    {
+      name: 'vegan',
+      title: 'Vegan',
+      type: 'boolean',
+      description: 'Is it Vegan?',
+      options: {
+        layout: 'checkbox',
+      },
+    },
+    {
+      name: 'price',
+      title: 'Price',
+      type: 'number',
+      description: 'Price of dish in pence',
+      validation: (Rule) => Rule.min(99).max(10000), // Limits what can be entered for price
+    },
+    {
+      name: 'image',
+      title: 'Dish Image',
+      type: 'image',
+      options: {
+        hotspot: true, // clever thing that lets us edit where to focus the picture when resizing
+      },
+    },
+    {
+      // Add a slug to deal with pesky spaces in names
+      name: 'slug',
+      title: 'slug',
+      type: 'slug',
+      options: {
+        source: 'name',
+        maxLength: 50,
+      },
+    },
+
+    {
+      name: 'Intolerences',
+      title: 'Contains',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'intolerance' }] }],
+    },
+  ],
+  preview: {
+    select: {
+      name: 'name',
+      vegetarian: 'vegetarian',
+      vegan: 'vegan',
+    },
+    prepare: (fields) => ({
+      title: `${fields.name} ${
+        // eslint-disable-next-line no-nested-ternary, naughty naughty
+        fields.vegan ? '- 🌱  Ve' : fields.vegetarian ? '-🍆  Veg' : ''
+      }`,
+    }),
+  },
+};
+
+```
 
 ## Customising our Inputs
+
+One last thing, mostly optional. We are not limited to how Sanity renders the inputs by defailt. We can make our own version of the inputs using React components, we just need to tell Sanity to do that.
+
+### The basics
+
+First we want to create a components folder and inside of that the component we want to use.
+
+
+We create a simple React component and import it into the schema as we would in React. In the relevent field object add the following property to tell it to use the component for the input: 
+
+`inputComponent: nameOfComponent`
+
+Its a good idea to get a basic component rendering something basic to check it works before moving on.
+
+
+### Actually customising the input
+
+There are a few things that are special because we are using Sanity in order for our input to talk to it properly.
+
+#### 1. Get Props from Sanity
+
+This is Because we told Sanity that we want to use this component for the input, it gives us a whole bunch of Props we have access to that relate to the data in Sanity. Some key ones are:
+
+- Type, the filed object, contains title and descript and other things
+- Value, what is in the input
+- onChange, what to do when it changes
+- inputComponent, reference to input itself so Sanity knows what to look at.
+
+#### 2. Setting up Patching function
+
+Sanity has its own method of updating its data, and it requires some Santity magic as follows:
+
+1. We import the following:
+
+`import PatchEvent, {set, unset} from 'part:@sanity/form-builder/patch-event'`
+
+2. Build the following function:
+
+```js
+function createPatchFrom(value){
+  PatchEvent.from(value === '' ? unset() : set(value))
+}
+```
+
+Basically Sanity will set the value if the input value exists and unset it if it does not.
+
+### 3. Build our input and complete our component
+
+So I am building an input for an employee's age here, which is a bad idea for real life but for the sake of showing you the whole component:
+
+```js
+import React from 'react'
+import PatchEvent, {set, unset} from 'part:@sanity/form-builder/patch-event'
+
+function createPatchFrom(value){
+  PatchEvent.from(value === '' ? unset() : set(value))
+}
+
+export default function AgeInput({ type, value, onChange, inputComponent }){
+  return (
+    <div>
+      <h2>{type.title} {value ? value : ''</h2> 
+      <p>{type.description}</p>
+      <input
+        type={type.title}
+        value={value}
+        onChange={event => onChange(createPatchFrom(event.target.value)})
+        ref={inputComponent}
+      />
+    </div>
+  )
+}
+
+```
+
+### Conclusion
+
+Phew, if you don't care about Sanity this would be a dull one but since Gatsby doesnt involve itself in backend stuff we need something to handle our data. Sanity is a good pick for something fairly easy to work with and obviously that is what I am working with in my posts going forward where we get to look at hooking up our Gatsby to our Sanity.
+
 
