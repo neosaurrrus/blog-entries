@@ -895,3 +895,183 @@ export default function AgeInput({ type, value, onChange, inputComponent }){
 Phew, if you don't care about Sanity this would be a dull one but since Gatsby doesnt involve itself in backend stuff we need something to handle our data. Sanity is a good pick for something fairly easy to work with and obviously that is what I am working with in my posts going forward where we get to look at hooking up our Gatsby to our Sanity.
 
 
+
+
+
+# Figuring out Gatsby #5 - GraphQL how Gatsby eats data
+
+In my last post I actually didn't talk much about Gatsby and instead set up a Sanity backend for Gatsby to injest somehow.
+
+The gist of the Sanity backend is that we have the following data for our restuarant app to use:
+
+- dishes, our meals
+- intolerences, things like gluten that can be in dishes
+- employees, who works at the restaurant
+- jobs, the jobs at the restuarant which an employee has
+
+Regardless of how that data exists we need a way to show it for visitors to our Gatsby site so thats what we will talk about in this post.
+
+
+## Set up Gatsby Config
+
+`gatsbyconfig.js` which may need creating on your root folder, and sets up thignmd that apply accross your site mostly:
+
+1. Site Metadata - Basic properties of your site
+2.
+
+
+```js 
+module.exports = {
+  siteMetadata: {
+    title: `The Cat and Bear Restaurant`
+    siteUrl: `whatever.com`
+    description: 'Purrfect Food. Roarsome ambiance'
+  }
+}
+```
+Now we actually have some data we can head to `localhost:8000/___graphql` to build our first query:
+
+```js
+query MyQuery {
+  site {
+    siteMetadata {
+      title
+    }
+  }
+}
+```
+
+Should return:
+
+```js
+{
+  "data": {
+    "site": {
+      "siteMetadata": {
+        "title": "The Cat and Bear Restaurant"
+      }
+    }
+  },
+  "extensions": {}
+}
+```
+
+
+### Hol' Up, whats this GraphQL stuff?
+
+If you haven't seen graphql before then it. Put simply graphQL can let make queries (reading data) and mutations (changing data) using syntax that is a little bit like working with JSON (...not really true but best I can do in a sentance.) Its morefun than writing an SQL query at least. 
+
+It will be quite the detour to explain it fully but I can recommend the [ video series by The Net Ninja](https://www.youtube.com/watch?v=Y0lDGjwRYKw) to get the general gist of it. Watch the first few videos at least, I find the visualisations help alot in making sense of how it works.
+
+ GraphQL is the backbone of how Gatsby handles data so its important to get it understood.
+
+
+ ## Pluggin' In to Gatsby Plugins
+Plugins are a superpower of Gatsby, taking what already exists and hooking it up in your own app. At time of writing there is 2516 plugs availble. You can view the Gatsby Plugin [Library](https://www.gatsbyjs.com/plugins) to get a flavour of what things are availiable.
+
+
+Adding a plugin is as easy as specifying the name of the plugin:
+
+```js
+module.exports = {
+  siteMetadata: {
+    title: `The Cat and Bear Restaurant`
+    siteUrl: `whatever.com`
+    description: 'Purrfect Food. Roarsome ambiance'
+  },
+  plugins: [
+    'PLUGIN_NAME'
+  ]
+}
+```
+
+This gets it working in the most default manner possible but the documents usually have options we can configure. For the site map plug in we can do something like this:
+
+```js
+plugins: [
+  //assume other plugs exist in this array
+  {
+    resolve: `gatsby-plugin-sitemap`,
+    options: {
+      sitemapSize: 5000
+    }
+  }
+]
+```
+
+**Important Note:** It won't do much till you also `npm install` the relavent plug in by its name. 
+
+Getting plugins in Gatsby is a doddle, any complexity will come from the Plugin itself so it will require studying the docs for each one. In my case, we have to get Gatsby talking to Sanity so lets take a deeper look at that:
+
+
+1. Deploy graphQL for Sanity. In your Sanity folder type `sanity graphql deploy <dataset_name>`
+
+2. Back in the Gatsby folder, get it installed with `npm install gatsby-source-sanity`
+
+3. Get some details of your Sanity Project. Assuming you have set up a project at (https://manage.sanity.io/projects/) we will need:
+
+- Project ID
+- The name of the dataset 
+- Token. This is a bit more involved. We can create a token by going to 'settings', 'api' and 'add new token'. Give it a label for your own info and copy the long string that appears somewhere. While you are in the API settings, take a mental note that we should specify CORS origins for the URL that will allow us talk to Sanity when it is in production.
+
+
+```js
+plugins: [
+    {
+      resolve: `gatsby-source-sanity`,
+      options: {
+        projectId: `<YOUR SANITY PROJECT ID`,
+        dataset: `<PRODUCTION IN MY CASE>`,
+        watchMode: true //Allows changes to be reflected in Realtime for development
+        token: process.env.SANITY_TOKEN, //DO NOT put you token in here. We need to keep our token secret. So we stick it into a .env file. See below...
+        
+        graphqlTag: 'default',
+      },
+    },
+  }
+]
+```
+
+### ENV files, to stop ENVious hackers.
+
+Quick aside, API tokens are sensitive, if people have access to them, they can do bad things. Our gatsby-config will be included in version control such as github so we can put the token there. Instead we just place a reference to an env file which contains secrets and doesn't go into version control. As an aside to our aside, having environment variables is also handly for things that do change between environments, such as connecting to a test database as opposed to a production one, without changing the 
+
+1. npm install `dotenv` which allows us to use environment files easily
+2. Create a `.env` in the root of our gatsby site.
+3. Specify what SANITY_TOKEN is:
+
+`SANITY_TOKEN=reg4ergGW...etc`
+
+4. Lastly we need to configure dotenv in our gatsby config file: 
+
+```js 
+import dotenv from 'dotenv'
+dotenv.config({path: '.env'})
+```
+
+This will get the config file using our API Key securely.
+
+Lastly we should test it all works, a quick way is to console log the variable (if local) in gatsby-config to see if it is working properly. But if it is all hooked up as intended, when we go to our GraphiQL we should start seeing the contents of our Sanity popping in. Sanity data should start with `allSanity` so that: 
+
+```js
+query MyQuery { 
+  allSanityMeals {
+    nodes {
+      name
+    }
+  }
+  }
+```
+
+Should return all the names of our meals in our hypothetical restaurant site. Phew, the above looks fairly tricky if you have never done something like this before but compared to hooking up a seperate backend, I promise, its a relative breeze!
+
+## Getting it visible via Gatsby Queries
+
+
+
+
+
+
+
+
+
