@@ -1022,10 +1022,9 @@ plugins: [
       options: {
         projectId: `<YOUR SANITY PROJECT ID`,
         dataset: `<PRODUCTION IN MY CASE>`,
-        watchMode: true //Allows changes to be reflected in Realtime for development
+        watchMode: true, //Allows changes to be reflected in Realtime for development
         token: process.env.SANITY_TOKEN, //DO NOT put you token in here. We need to keep our token secret. So we stick it into a .env file. See below...
-        
-        graphqlTag: 'default',
+
       },
     },
   }
@@ -1067,7 +1066,7 @@ Should return all the names of our meals in our hypothetical restaurant site. Ph
 
 ## Getting it visible via Gatsby Queries
 
-
+So far we have gotten Gatsby to talk to our Sanity via GraphQL. The last step is getting the data from GraphQL onto our pages. Pretty much the whole reason for two wholly unrelavent blog posts.
 
 
 
