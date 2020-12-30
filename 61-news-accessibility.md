@@ -2,7 +2,7 @@
 
 I recently performed a brief analysis of accessibility of UK News sites, for two reasons:
 
-1. News is really important in allowing people to take part in society, democracy and stay connected in a ever-complicating world. I was curious if there would a real impact for those who rely on accessibility features.
+1. Digital News Media is really important in allowing people to take part in society, democracy and stay connected in a ever-complicating world. I was curious if there would a real impact for those who rely on accessibility features.
 
 2. I also wanted to improve my knowledge to let accessible design become my natural thought process so I can make strides on that in 2021.
 
@@ -16,7 +16,7 @@ Combining my two interests, I decided to take a slice of UK News sites and see h
 - The Times
 - The Sun
 
-Now a bunch of what I am going to say is very much subjective and from the perspective of a regular joe but hey, that's the point of a blog. For example, when I say something was not possible, that means that I couldn't figure it out. I might not be the sharpest of internet users out there but honestly, that's who is using your sites!
+Now a bunch of what I am going to say is very much opinionated and from the perspective of a regular Joe but hey, that's the point of a blog. For example, when I say something was not possible, that means that I couldn't figure it out. I might not be the sharpest of internet users out there but honestly, that's who is using your sites!
 
 
 ## 1. There is more done right than done wrong.
@@ -31,6 +31,9 @@ Overall the BBC handles accessibility in the most effective way but to all the d
 You know the fun of cookie prompts news sites or not. One of the first things a keyboard-only user might have to do is try and find a way to get rid of it. So lets make that as painless as possible.
 
 - **Good**: Have your cookie prompt at the top of the screen and the first thing to focus on. (BBC). 
+
+![BBC Cookie](https://github.com/neosaurrrus/blog-entries/blob/master/pics/61/bbc.png?raw=true)
+
 - **Hmmm...**: Sticking the cookie prompt on the bottom can be a bit more confusing for tab logic, especially when you tab past it into the main content that is obscured (Mirror)
 - **Not Great**: Now allowing the cookie prompt to be focusable at all. And also have a video popup you can focus on while you are at it. (Mail Online)
 
@@ -43,6 +46,7 @@ Some news sites need people to pay for its content and there is nothing wrong wi
 - ***Not Great:** Ask for support with a popup in the footer, but don't allow it to be focusable (The Guardian)
 - **Really Not Great:** Use a subscription popup over content which is not focusable or screen readable and obscures the cookie prompt which means you have no idea where focus has gone. (The Telegraph)
 
+![Telegraph subscription](https://github.com/neosaurrrus/blog-entries/blob/master/pics/61/telegraph.png?raw=true)
 
 ## 4. Tab Order Vs Cool Layouts
 
@@ -50,7 +54,7 @@ Its important for news sites to have a visually compelling layout, much like thi
 
 - **Good:** Small elements, that follow a logical pattern. Allowing a keyboard user can follow without thinking too hard (The BBC)
 - ***Okish:** Occasional long elements, causing the tab focus to jump large distances and giving keyboard users the chance to play "hide and seek" with the focus highlight (The Guardian)
-- **Not Great:** Letting your tab focus follow a course no regular pair of eyeballs would. Occaionally vanishing somewhere for a few tabs before returning  (The Times)
+- **Not Great:** Letting your tab focus follow a course no regular pair of eyeballs would. Occassionally vanishing somewhere for a few tabs before returning  (The Times)
 - **Also Not Great:** Have a side bar you can see but cannot focus on till you have reacched the bottom of a very long main column (The Mail)
 
 ## 5. Alt tags for Images, sometimes silence is golder
@@ -58,8 +62,10 @@ Its important for news sites to have a visually compelling layout, much like thi
 It's great if there is a description to your images, certainly it is something that accessibility tests flag up easily. However, that doesn't mean that any text is better than no text.
 
 - **Good:** Provide a short helpful description of what is found in the picture (BBC News)
-- ***OK, fair enough.. :** Don't provide a description, and just let the screen reader skip over it. (The Guardian)
-- **Really Not Great:** Set the alt text to be a copy of the headline text it is next to, making screen readers effectively say the same thing twice (The Sun, The Times, The Mail)
+- ***OK, fair enough... :** Don't provide a description, and just let the screen reader skip over it. (The Guardian)
+- **Really Not Great:** Set the alt text to be a copy of the headline text it is next to, making screen readers effectively say the same thing twice. Annoying no matter how cute the story is.(The Sun, The Times, The Mail)
+
+![Mail Seal](https://github.com/neosaurrrus/blog-entries/blob/master/pics/61/mail.png?raw=true)
 
 
 ## 6. Highlighting Interactive Elements highlights plenty of differences.
@@ -72,6 +78,9 @@ Mre tangible issues stem from elements that dont appear to be interactive that a
 
 - **Good:** Use of both colour and underlining when interactive element is focused (The BBC)
 - ***Hmmm... :** Make the background a similar colour to the tab focus effectively making the element not highlight when focused. (The Guardian)
+
+![Guardian cookies](https://github.com/neosaurrrus/blog-entries/blob/master/pics/61/guardian.png?raw=true)
+
 - **Really Not Great:** No colour or text formatting when focused or hovered over (The Mirror)
 
 
@@ -84,7 +93,7 @@ I am not sure why advertisments wouldn't want to do something snappy for folks u
 
 - **Good:**  Allowing a screen reader to recongnise an ad, state that is an ad and move on. (The Mirror)
 - ***Hmmm... :** Make the screen reader reconcognise ad content as simply web content making it confusing what it is exactly (The Sun)
-- **Really Not Great:** Have sponsored content that makes no consessions to screen readers and makes them read out ID numbers and such (The Times) 
+- **Really Not Great:** Have sponsored content that makes no consessions to screen readers and makes them read out ID numbers and such. (The Times) 
 
 
 ## 8. A site can be experienced in different ways, screen reading tends to be where most issues lay.
@@ -124,6 +133,4 @@ My analysis was only scratching the surface of what makes a web site accessible.
 
 ## Wrap up, my full results and secret shame.
 
-I put my findings in more detail at [newsa11y](http://newsa11y.com). Which, embarrassingly, needs alot more accessibility work itself. It was intended as a quick MVP to get started.
-
-I hope to do the exercise again next year to perform a proper, deeper, clearer and yes, accessible, analysis of the state of UK News media when it comes to accessibility, feel free to get in touch if this is something you'd love to help out with.
+I put my findings in more detail at [newsa11y](http://newsa11y.com). Which, embarrassingly, needs alot more accessibility work itself. It was intended as a quick MVP to get something going. I hope to do the exercise again next year to perform a proper, deeper, clearer and yes, accessible, analysis of the state of UK News media when it comes to accessibility, feel free to get in touch if this is something you'd love to help out with.
