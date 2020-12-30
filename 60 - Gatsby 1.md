@@ -1064,12 +1064,122 @@ query MyQuery {
 
 Should return all the names of our meals in our hypothetical restaurant site. Phew, the above looks fairly tricky if you have never done something like this before but compared to hooking up a seperate backend, I promise, its a relative breeze!
 
+
 ## Getting it visible via Gatsby Queries
 
-So far we have gotten Gatsby to talk to our Sanity via GraphQL. The last step is getting the data from GraphQL onto our pages. Pretty much the whole reason for two wholly unrelavent blog posts.
+So far we have gotten Gatsby to talk to our Sanity via GraphQL. The last step is getting the data from GraphQL onto our pages. Pretty much the whole reason for two wholly unrelavent blog posts. As before all my examples revolve around a hypothetical restaurant site that cares about showing off what it has on its menu.
+
+In Gatsby, at present, there can are two types of queries we can write to get data into our components and onto the page
+
+1. Page Queries. These allow variables but only can be run on a top-level page
+2. Static Query - Do not allow for variables, but can exist everywhere
+
+Images are a special bit of data we can look at in more detail.
+## Page Queries
+
+Page queries are pretty straightforward. Here is how we might get the dishes from the database adding the following GraphQL query to the Food page where we might see all the dishes:
+
+
+```js
+import React from 'react';
+
+function FoodPage() {
+  return (
+    <div>
+      <p>This is the Food page, where the dishes we serve are listed</p>
+    </div>
+  );
+}
+
+export const DishQuery = graphql`
+  query DishQuery {
+    dishes: allSanityDish {        //rename the output something nicer
+      edges {
+        node {
+          id
+          name
+          price
+          intolerences { 
+            name
+          }
+          image {                // We will talk images in a bit
+            asset {
+              fluid(maxWidth: 400) {
+                src
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export default FoodPage;
+```
+
+If that works, you can use React Dev tools to see that the dish data has appeared in props. A good step but lets see if we can manipulate it some more by accessing the props in our code.
+
+In our FoodPage component we can access the data by passing in the props, or more exactly the data field within props. At this point we can use that data however we like in the component:
+
+```js
+function FoodPage({ data }) {
+  const dishes = data.dishes.edges;
+  return (
+    <div>
+      <h1>We currently serve {dishes.length} dishes.</h1>
+    </div>
+  );
+}
+```
+From there you can build extra components for mapping over the array if you so wish as pass dishes down as props. I wont get into that but if you have worked with React that should be fairly straightforward, here is the component file I ended up with:
+
+
+```js
+import React from 'react';
+
+function DishItem({ dish }) {
+  return (
+    <div>
+      <h2>
+        {dish.name} - {dish.price}{' '}
+      </h2>
+      <h3>Intolerence information:</h3>
+      <p>
+        {dish.intolerences.map((intolerence) => intolerence.name).join(', ')}{' '}
+      </p>
+    </div>
+  );
+}
+
+export default function DishList({ dishes }) {
+  return (
+    <div>
+      {dishes.map((dish) => (
+        <DishItem key={dish.id} dish={dish.node} />
+      ))}
+    </div>
+  );
+}
+
+```
 
 
 
+
+## Gatsby Images 
+
+Making images work efficiently is a pain. File sizes can be all over the shop and cause performance issues, you might get wierd dimension issues. Certainly getting lazy loading, where it only loads when it about to be viewed is a hassle too. Gatsy has an image plugin to make getting this stuff right a breeze... once you have it set up!
+
+Manipulating images takes alot of computing effort, so you either need to configure a computer to do the heavy lifting or you can use a service like Cloudinary or Imgix. Sanity has one that I will use. 
+
+First off in whatever component you wish to wish to use to display images:
+
+`import Img from 'gatsby-image'`
+
+And then use the image tag as follows:
+
+`<Img fluid={dish.image.asset.fluid} alt={dish.name}>`
 
 
 
