@@ -1,4 +1,4 @@
-Test-Driven Development (TDD) is a term that gets a subset of people really excited and a larger chunk with dread. As I have been playing around with it more an more I wanted to reflect on my own understanding and the theory behind it as well as provide a small, non-scary example. In this post we will cover:
+Test-Driven Development (TDD) is a term that gets a subset of people really excited and a larger chunk with dread. As I have been playing around with it more an more I wanted to reflect on my own understanding and the theory behind it as well as provide a small, non-scary example to help get things started. In this post we will cover:
 
 - My own introduction
 - What TDD is, and common concepts.
