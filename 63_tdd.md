@@ -315,3 +315,8 @@ This starts getting more important as you dive deeper into the world of testing.
 
 Phew, this was supposed to be a very quick primer on what TDD is and how to actually get started without getting bogged down in the details. There is a whole world under the little bit I have shown but hopefully this is useful to understand how I leant and how you might be able to get your feet wet into quite a growing movement towards TDD.
 
+
+
+
+
+
