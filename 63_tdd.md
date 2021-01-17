@@ -320,3 +320,190 @@ Phew, this was supposed to be a very quick primer on what TDD is and how to actu
 
 
 
+
+# part 2 - Testing React with React Testing Library
+
+Last time I explained a little about concepts and basic testing. As a React developer primarily, I tend to test things that are in React, madness I know. In this post we will look at:
+
+- React Testing Library
+- Unit Tests with Data Test Ids
+- Interactive Test with FireEvent
+- Clean up
+- Integration Testing with Forms
+
+
+## Introduction to React Testing Library
+
+
+To be able to test React code life is much easier with React Testing Library to allow us to properly query whats going on with React to build our tests.  The other popular dog in this world is Enzyme. Which is better is a debate for an internet search. But React Testing Library has more of a focus on the DOM and what the user actually sees whereas Enzyme focuses more at the component itself. If you are using create-react-app then the good news is that React Testing Library is built in, otherwise we can add it with:
+
+`npm install --save-dev @testing-library/react`
+
+
+
+Quick note: For the sake of clarity and brevity, i'll be breezing over the step by step TDD approach, namely:
+
+1. RED: Start with simplest test that proves something is missing.
+2. GREEN: Write the simplest way to make the test pass.
+3. Refactor, improve the code till you are happy with it
+
+But hopefully you can see where those steps would exist in the process.
+
+## Unit Tests with Data Test IDs
+
+Lets pretend we want to have a component called Greeter who's job it is to show a div that says 'Howdy'. In the test file we can provide assertions using a bunch of queries made available to us via React Testing Library (and DOM testing Library which is merged into it). 
+
+```js
+import React from 'react'
+import { render } from 'react-testing-library';
+import Greeter from './Greeter';
+
+test('<Greeter/>', () => {
+  const {debug, getByTestId}= render(< Greeter/>);
+  debug(); //outputs the dom to see what it is, useful for building tests so handy for building the test.
+  expect(getByTestId('greeter-heading').tagName).toBe('div');
+  expect(getByTestId('example-heading').textContent).toBe('Howdy');
+})
+```
+
+So what's this getByTestId business? Data Test IDs let us identify elements so we can see whats going on there. We can assign a test id by simply adding the id in our JSX we write to pass the test:
+
+```js
+import React, { Component } from 'react'
+export default class Greeter extends Component {
+    state = {
+      greeting: "Howdy" //Let's assume it is in state because it might change
+    }
+    render() {
+      const { greeting } = this.state
+      return (
+        <div data-testid='greeter-heading'> 
+                { greeting }
+        </div>
+        )
+    }
+}
+```
+
+
+Of course we don't have to use data test ids. To get a fuller taste of what you can query look at the cheatsheets for [React Testing Library](https://testing-library.com/docs/react-testing-library/cheatsheet) and [DOM Testing Library](https://testing-library.com/docs/dom-testing-library/cheatsheet). It should cover everything you might want to query so I don't have to!
+
+
+
+## Building More Interactive Tests
+
+React is all about interactions so we need to test that the interface actually works by testing the interactivity of React.
+
+For this lets dream up a component that is a counter that ticks up every time we click the button. Lets jump to the point where we have a test and js file that is not yet interactive, in other words a dumb button that says 0:
+
+```js
+//Test File
+import React from 'react'
+import { render} from 'react-testing-library';
+import Counter from './Counter';
+
+test('<Counter />', () => {
+  const { debug, getByTestId } = render(<Counter />);
+  const counterButton = getByTestId('counter-button')
+  debug();
+
+  expect(counterButton.tagName).toBe('BUTTON');
+  expect(counterButton.textContent).toBe('0');
+});
+
+//JS
+import React, { Component } from 'react'
+
+export default class Counter extends Component {
+    state = {
+      count: 0
+    }
+    render() {
+      const {count } = this.state
+      return (
+        <div>
+            <button type="button" data-testid='counter-button'>
+                {count}
+            </button>
+        </div>
+        )
+    }
+}
+```
+
+Ok, so we need a test to define what happens when there is an event on that button. So first we need a way of watching events that are fired...
+
+
+```js
+//Test File
+import React from 'react'
+import { render, fireEvent} from 'react-testing-library'; //Added FireEvent from React Testing Library
+import Counter from './Counter';
+
+test('<Counter />', () => {
+  const { debug, getByTestId } = render(<Counter />);
+  const counterButton = getByTestId('counter-button')
+  debug();
+  expect(counterButton.tagName).toBe('BUTTON');
+  expect(counterButton.textContent).toBe('0');
+  fireEvent.click(counterButton) //sends a click to the counter button
+  expect(counterButton.textContent).toBe('1'); //expect it to be one after the first click.
+  fireEvent.click(counterButton) //sends another click to the counter button
+  expect(counterButton.textContent).toBe('2'); //expect it to be two after the second click
+  debug() //This will output the DOM in the terminal after the additional clicks so its a good place to check whats happening.
+});
+```
+
+At this point our test suite should be telling us we are failing the test. Well, thats what happens if you have a button that does nothing so lets fix that...
+
+```js
+import React, { Component } from 'react'
+
+export default class Counter extends Component {
+    state = {
+      count: 0
+    }
+
+    count = () => {
+        this.setState( (prevState) => ({
+            count: prevState.count +1
+        }))
+    }
+
+    render() {
+      const {count } = this.state
+      return (
+        <div>
+            <button type="button" 
+            onClick={this.count}
+            data-testid='counter-button'>
+                {count}
+            </button>
+        </div>
+        )
+    }
+}
+```
+
+### Cleanup, because testing isn't just always fun.
+
+One little housekeeping touch. We want to ensure that after each test we clean things back up so its all fresh for the next step. Handily React Testing Library gives us a cleanup method just for that purpose if we add that, that will make sure each test has a clean slate.
+
+```js
+import { render, fireEvent, cleanup} from 'react-testing-library'; //Added from React Testing Library
+afterEach(cleanup)
+
+test('<Counter />', () => { //etc
+```
+
+
+## Integration Testing with Forms
+
+Ok so we have the basics down lets try and apply what we have learnt to a slightly more challenging but realistic example (but not that realistic, as you'll see)
+
+Let's imagine we have a React App that is all about books and one of the features we want is the ability to add a new book. For that we might want a component for a new book with a book form component that is used inside :
+
+- NewBook
+- BookForm
+
+I like to scaffold empty components before we get into the tests, 
