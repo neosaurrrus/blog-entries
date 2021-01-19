@@ -21,7 +21,7 @@ Now a bunch of what I am going to say is very much opinionated and from the pers
 
 ## 1. There is more done right than done wrong.
 
-It's easy to criticise, as I am about to do but its important to say that overall they have done a good job, covering many of the basics to a point they don't get mentioned. But of course that just means where they drop the ball becomes even more glaring. 
+It's easy to criticize, as I am about to do but its important to say that overall they have done a good job, covering many of the basics to a point they don't get mentioned. But of course that just means where they drop the ball becomes even more glaring. 
 
 Overall the BBC handles accessibility in the most effective way but to all the developers I'd say *great work, but try to learn from each other, if you took the best accessibility practices from each site you'd be perfect!*
 

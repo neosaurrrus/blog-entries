@@ -496,6 +496,7 @@ afterEach(cleanup)
 test('<Counter />', () => { //etc
 ```
 
+Without that, you will get duplicate values in the DOM which is not ideal. Its easy to forget about but please don't!
 
 ## Integration Testing with Forms
 
@@ -506,4 +507,345 @@ Let's imagine we have a React App that is all about books and one of the feature
 - NewBook
 - BookForm
 
-I like to scaffold empty components before we get into the tests, 
+I like to scaffold empty components before we get into the tests, but of course thats up to you.
+
+So I would like the NewBook component to:
+
+1. Show a H1 that says "Enter a New Book"
+2. Show the book form found in BookForm
+
+
+If we hold onto our test-id pattern from before it will be straightforward right? Here is our test...
+
+```js
+import React from 'react'
+import { render, cleanup } from 'react-testing-library'; 
+import NewBook from './NewBook';
+
+afterEach(cleanup)
+
+test('<NewBook>', () => {
+ const {debug, getByTestId} = render(<NewBook/>) //Grab the tools we need for this next.
+
+//Check Page Title is present and correct
+ const heading = getByTestId('page-title') //This id might be a good pattern between multiple components
+ expert(heading.tagName).toBe("H1") //Note the caps in 'h1'
+ expert(heading.textContent).toBe("Enter a New Book")
+ 
+//Check Book Form is present
+ expert(queryByTestId('book-form')).toBeTruthy(); //Lets talk about this line.
+ debug()
+});
+```
+
+We use `queryByTestID` where we are a bit more causal about if it exists or not. It doesn't really matter when we are expecting it to be truthy
+
+And the New Book component:
+
+```js
+import React, { Component } from 'react'
+import BookForm from './BookForm'
+
+export default class NewBook extends Component {
+    render() {
+        return (
+            <div>
+                 <h1 data-testid='page-title'>Enter a New Book</h1>
+                 <BookForm data-testid='book-form'/>
+            </div>
+        )
+    }
+}
+```
+
+And we get a Failure message like this:
+
+`expect(received).toBeTruthy() Expected value to be truthy, instead received null`
+
+What gives?!
+
+Remember at the start of the post, I said now React Testing Library looks at the resultant DOM whereas Enzyme looks at the Component. This is where they differ in philosophy.  In this case, the Component **BookForm** doesn't exist in the DOM, just its contents so we need the data-testid to be on the form within the BookForm component. It is possible to mock the BookForm component (thats for another post) so that it can be picked up in the test, but the default 'thinking' of React Testing Library wants us to consider the result in the DOM. So I guess you can say it is integration-first. Is that better, thats for the Internet to fight over, I am not taking sides in that one!
+
+Soon as we create the BookForm component with something that has the testId we can pass the test (though not very robustly):
+
+```js
+import React, { Component } from 'react'
+
+export default class BookForm extends Component {
+    render() {
+        return (
+            <div>
+               <form data-testid='book-form'></form>
+            </div>
+        )
+    }
+}
+```
+
+The resultant HTML from the debug output might help show what is going on if you are a bit lost:
+
+```html
+    <body>
+        <div>
+          <div>
+            <h1
+              data-testid="page-title"
+            >
+              Enter a New Book
+            </h1>
+            <div>
+              <form
+                data-testid="book-form"
+              />
+            </div>
+          </div>
+        </div>
+      </body>
+```
+
+
+## Phew, let's wrap this up
+
+We covered the basics of React Testing using React Testing Library. In order to do this, we are going lightly over a few concepts and quality of the tests. Hopefully that is something I'll find time to do a deeper dive of later, my main goal is to get people up and running with the infrastructure of React testing, the quality of the tests is really important to look at! However next time I think I will talk about the cool kid of Testing, Snapshot testing as that is cool... in the world of testing anyhow.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Don't Be Afraid of Snapshots and Mocking Form Submissions,  in React Testing
+
+From our last post, we got introduced to React Testing via React Testing Library. For the sake of keeping things short and sweet we left out a few extra things to talk about. For that reason this post will be quite a mixture of things. In this post we will look at:
+
+- Snapshot Testing
+- Mocking a Form submission
+- Checking the Input Values Submitted
+
+
+## Snapshot Testing.
+
+Snapshot testing sounds a bit like what it sounds like. If you took a photo of the result, did something then happen that makes it look different to that photo? Because we take the snapshot at a high-level on the component, typically the enclosing Div Snapshot testing lets us watch for changes across everything under that element. However, since Snapshot testing compares to a moment frozen in time, it works great for components that are static in nature, but ones with dynamic changeable elements, they may not be the best fit. Anyhow. let's look at implementing it
+
+
+### Implementing Snapshot Testing
+
+Jest makes this a doddle. First we need to grab `container` from our render:
+
+`const {container} = render(<NewMovie/>)`
+
+Container being the contents of the rendered component **including any child components**. Then we want to say what we expect to match the Snapshot:
+
+`expect(container.firstChild).toMatchSnapshot();`
+
+The firstChild in this regard is the enclosing div. 
+
+Soon as you have done that for the first time, Jest will do something cool, it will create the snapshot for us in the `__snapshots__` folder. If you check it out you will see it is basically the output of the enclosing div. That's cool but here what I said about it being best for things that done change very often, what if you decide you wanted to add or tweak something? For example, an extra <p> tag? Soon as you have done that the test suite will be pointing out it no longer matches the snapshot:
+
+> expect(value).toMatchSnapshot() Received value does not match stored snapshot 1. - Snapshot
+
+
+>Snapshot Summary
+>1 snapshot test failed in 1 test suite. Inspect your code changes or press `u` to update them.`
+
+If it was a tweak that was intended, then as it says, its straightforward to update the snapshot with a tap of the u key. This also makes it easy to accept something that has not been intended so be careful that Snapshot does not make things too easy for you to the point you snapshot intended stuff.
+
+Still, snapshot testing is a very useful way of quickly flagging when something changes and definitely should be considered for less dynamic components. This not intended as a replacement for unit testing , and its not really practical to write a snapshot so they are not really compatible with TDD principles but provide a good quick additional layer of testing. You can learn more from the [JEST Documentation about Snapshots](https://jestjs.io/docs/en/snapshot-testing)
+
+
+## Mocking and Spying a Form Submission
+
+Ok, so let's take another look at Mocking which I touched on in my first testing post. But this time we can apply it to a more real world example. Namely lets look at a testing a form component. This is a common use case for mocking a function as we don't want to actually submit something to the database when we test things. I am sure we all have databases that are full of entries like "test" and "aaaa" from our manual testing days, let's see about reducing that a little!
+
+So let's go with a New Book Form that takes a book title and submits it, not too complex but will do as an example. First of all let's build out the test to:
+
+1. The button to exist, 
+2. And also tell the test suite to click it.
+
+```js
+import React from 'react'
+import { render, cleanup, fireEvent} from 'react-testing-library'; //Added FireEvent from React Testing Library
+import BookForm from './BookForm';
+
+afterEach(cleanup)
+
+test('<BookForm>', () => {
+  const {debug, getByText} = render(<BookForm/>)
+  expect(getByText('Submit').tagName).toBe('BUTTON') //Looks for an element with the text Submit, just for the sake of being different.
+  fireEvent.click(getByText('Submit'))
+  debug()
+});
+```
+
+So lets build the component with the button and also a little cheeky function when the form is submitted:
+
+```js
+import React, { Component } from 'react'
+
+export default class BookForm extends Component {
+    render() {
+        return (
+            <div>
+               <form data-testid='book-form' onSubmit={ ()=> console.log("click")}>
+                   <button type="submit">Submit</button>
+               </form>
+            </div>
+        )
+    }
+}
+```
+
+The reason I added that click function is to show that when we run the test, we can see that `click` appear in the log:
+
+```
+PASS  src/BookForm.test.js
+  ● Console
+    console.log src/BookForm.js:10
+      click
+```
+
+That might be useful in testing things work in a quick and dirty way. But if that form submission actually did something, then our tests would start getting dangerous so we need a safe way to submit the form when testing. To do this we need to consider the pattern we use for the component so we can safely mock it. This involves providing the function that is ran on submit via props. The component we will end up will looking like this:
+
+```js
+export default class BookForm extends Component {
+
+    state = {
+        text: ''
+    }
+    render() {
+        const {submitForm} = this.props
+        const {text} = this.state
+        return (
+            <div>
+               <form data-testid='book-form' onSubmit={ ()=> submitForm({text})}>
+                 
+                   <button type="submit">Submit</button>
+               </form>
+            </div>
+        )
+    }
+}
+```
+
+Ok so the big question here is, *why have we bumped the submitForm function to props?* Because we need to change what that function does if it is ran by our test compared to its normal job in the application. This will make sense when we look at the test we have written:
+
+
+```js
+import React from 'react'
+import { render, cleanup, fireEvent} from 'react-testing-library'; 
+import BookForm from './BookForm';
+
+afterEach(cleanup)
+const onSubmit = jest.fn(); //Our new Spy function
+
+test('<BookForm>', () => {
+  const {debug, getByText, queryByTestId} = render(<BookForm submitForm={onSubmit} />) // The spy function is used to for the submit form
+
+  //Unit Tests to check elements exist
+  expect(queryByTestId('book-form')).toBeTruthy()
+  expect(queryByTestId('book-form').tagName).toBe("FORM")
+  expect(getByText('Submit').tagName).toBe('BUTTON')
+
+  //Check Form Submits
+  fireEvent.click(getByText('Submit'))
+  expect(onSubmit).toHaveBeenCalledTimes(1); //This tests makes sure we van submit the spy function
+  debug()
+});
+```
+
+So to repeat what the comments say we:
+
+1. Create a spy function that does nothing
+2. This function is passed via props when we render the component.
+3. We test to see if it runs with a `expect(onSubmit).toHaveBeenCalledTimes(1)`. Which hopefully it does.
+
+This is all very clever but we have not done much but tested the form submits ok. Which is important but lets take things a step further looking at the inputs that are submitted.
+
+
+## Specifying Input Values for testing
+
+To make our testing more aligned to real life we may want to write a test that checks that a form can be submitted with certain specified inputs. In our example, we want our Book Form to have a text input for a title. Nothing too crazy but we want to make sure when we submit the form it can pass the title we want. The way you might approach this is as follows:
+
+1. Find a way to target the relevent part to be tested (i.e. the input field)
+2. Change the value of the input.
+3. Check that the form was submitted with the value we wanted.
+
+That is pretty good but there is a gotcha you need to be aware of. Changing the value of the input does not cause React's state to update in our test, we need to use a **change* event to update the value but the change to occur. ?Here are the additional parts we need to add to do this:
+
+
+```js
+test('<BookForm>', () => {
+  const {getByLabelText} = render(<BookForm submitForm={onSubmit} />) //Adding the getByLabelText
+
+  //1. Unit Test to check our input element exists
+  expect(getByLabelText('Title').tagName).toBe('INPUT') //test to make sure the input is there
+  
+  //2. change the Input Value using the change event.
+  fireEvent.change(getByLabelText('Title'), {target: {value: "Girl, Woman, Other"}}) //This event sets the value of the input and lets the change affect the state. 
+
+  //3. Check Form Submits as expected
+  fireEvent.click(getByText('Submit'))
+  expect(onSubmit).toHaveBeenCalledWith({title: 'Girl, Woman, Other'}) //This checks that the submission has the title we asked it to have earlier.
+
+  ```
+
+  Note that I am using a new query, *getByLabelText* which, unsuprisingly looks at the text of the label to find the element we are after. Step 2, is where we use our fireEvent. since our target is the input element, we need to drill down to find our value and change it. Finally we can check what our Spy function used with the *toHaveNeenCalledWith* method which is hopefully an easy one to understand. 
+
+  So we better see what the React code looks like that passes these tests:
+
+  ```js
+import React, { Component } from 'react'
+export default class BookForm extends Component {
+
+    state = {
+        title: '' //what gets sent on submit
+    }
+
+    render() {
+        const {submitForm} = this.props
+        const {title} = this.state
+        return (
+            <div>
+               <form data-testid='book-form' onSubmit={ ()=> submitForm({title})}>
+                   <label htmlFor="title">Title</label> //Remember that it is the text of the element our test is looking for not the HTMLFor
+                   <input id="title" type="text" onChange={(e) => this.setState({title: e.target.value})}></input> //Quick and Dirty input controlling
+                   <button type="submit">Submit</button>
+               </form>
+            </div>
+        )
+    }
+}
+```
+
+Cool, now it isn't the most complex form in the world but hopefully you can see how the techniques can be scaled up accordingly and also are getting a grasp of how simply we test dynamic content. If you set up the snapshot test earlier you will now see they can be a little annoying when you are writing out the code!
+
+
+
+
+
