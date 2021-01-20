@@ -640,13 +640,13 @@ We covered the basics of React Testing using React Testing Library. In order to 
 
 
 
-# Don't Be Afraid of Snapshots and Mocking Form Submissions,  in React Testing
+# Don't Be Afraid of ... Snapshot Testing and Mocking Forms and Props
 
 From our last post, we got introduced to React Testing via React Testing Library. For the sake of keeping things short and sweet we left out a few extra things to talk about. For that reason this post will be quite a mixture of things. In this post we will look at:
 
 - Snapshot Testing
 - Mocking a Form submission
-- Checking the Input Values Submitted
+- Testing Specific Input Values
 
 
 ## Snapshot Testing.
@@ -788,6 +788,20 @@ So to repeat what the comments say we:
 This is all very clever but we have not done much but tested the form submits ok. Which is important but lets take things a step further looking at the inputs that are submitted.
 
 
+### Bonus: Spying on Console Errors
+
+We can spy on pretty much anything we like. Even errors when a component is not called properly. Lets say,for example, we had a component that needs a bunch of props with specific proptypes defined. If we built a test for that, we would see the console.errors appear even though those errors were expected since we didn't provide props. So we can use the mocking function to handle the console errors like so:
+
+```js
+console.error = jest.fn()
+test('<ExampleComponent'>, () => {
+  render(<ExampleComponent />)
+    expect(console.error).toBeCalled()
+});
+```
+
+Of course, while this gets rid of the console error, this will still show any errors that may occur due to the lack of props passed in.
+
 ## Specifying Input Values for testing
 
 To make our testing more aligned to real life we may want to write a test that checks that a form can be submitted with certain specified inputs. In our example, we want our Book Form to have a text input for a title. Nothing too crazy but we want to make sure when we submit the form it can pass the title we want. The way you might approach this is as follows:
@@ -846,6 +860,110 @@ export default class BookForm extends Component {
 Cool, now it isn't the most complex form in the world but hopefully you can see how the techniques can be scaled up accordingly and also are getting a grasp of how simply we test dynamic content. If you set up the snapshot test earlier you will now see they can be a little annoying when you are writing out the code!
 
 
+
+### Bonus: Negative Assertions
+
+In our test we had the following line: 
+
+> expect(onSubmit).toHaveBeenCalledWith({title: 'Girl, Woman, Other'})  
+
+Which is checking if that assertion is true, if it **did** happen. There might be occasions where passing means checking if something **did not** happen. In Jest thats as easy as adding a `not` as part of the method like so:
+
+> expect(onSubmit).not.toHaveBeenCalledWith({title: 'Girl, Woman, Other'}) 
+
+This can be useful when, for example, you are testing what happens when data is not provided by props to a component that needs them. Which is handy as our next topic is...
+
+
+## Mocking Props
+
+So we are able to emulate form data, but another thing we common deal with is props. If our component needs props, we need a way of providing some. On a basic level this is quite straightforward if all the above made sense. In our test we need to: 
+
+1. Mock out what the props should be 
+2. Include those props when we render:
+
+```js
+console.error = jest.fn()
+
+const book = {
+  title: "The Stand"
+}
+
+test('<Book> without Book props', () => { //No props so 
+  render(<Book />)
+  expect(console.error).toHaveBeenCalled();
+})
+
+test('<Book> with Book Props', () => {
+  render(<Book book={book}/>)
+  expect(console.error).not.toHaveBeenCalled();
+})
+```
+
+Pretty cool right? Well yes but now we are into multiple tests, we have a little gotcha to be aware of. In the example above we have two places where we check if the console.error has been called. Once without props and a second time without props where we expect that it will not run. However if you run this it will fail as it will say that console.error was run the second time.... what gives?!
+
+Put simply, console.error was called when it ran the first test so it thinks it was called when doing the second. The fix for this is fairly simple and requires a tweak to our clean up function.
+
+```js
+afterEach( () => {
+  cleanup
+  console.error.mockClear()
+})
+```
+
+Now the memory of the console error is cleared between tests and things are more normal.
+
+There are unfortunately lots of little gotchas you will hit as you start testing real-world components. A common one is around React Router expecting things that are not found in the test, its beyond the scope of this blog post to cover you own use cases but its the kind of thing that is going to [need some research](https://stackoverflow.com/questions/43771517/using-jest-to-test-a-link-from-react-router-v4) when you encounter them. Tsking a step by step approach when writing tests and code does help narrow down and help search for solutions to such issues.
+
+
+
+
+
+# Don't be afraid of ... Testing Fetch requests in React
+
+In previous posts, I have been going over how to test common things we would do in React such as:
+
+- Component Elements
+- Forms
+- Props
+
+That is quite a few things in our testing toolbox. Now another common thing you might do in react is fetch data from a backend or external API. This can get a little hairy so I wanted to break it down and go slowly through it. In this post we will cover.
+
+- Mocking Fetch Requests
+- Async Tests
+- Loading States
+- 
+
+## Mocking Fetch Requests
+
+Now lets assume we have a Book component which fetches data from an external API when it provides an ID. 
+
+From previous posts we know how to provide props and variables to a test, so we could easily give the test an ID to then fetch from the external API. This is doable but perhaps not a good idea.
+
+We don't want to actually hit the API as that takes a little time to do and introduces a dependency to the API which makes it harder to reliably test.
+
+Instead,  we want to make up a result we can use for the test. To make generating fetch requests a snap I reach for a library called `jest-fetch-mock` which can be installed by:
+
+`npm install --save-dev jest-fetch-mock`
+
+Now, if this is something you are expecting to do a lot of, I recommend following the [setup steps provided](https://www.npmjs.com/package/jest-fetch-mock). For the sake of a punchy blog post we will do things quicker and dirtier.
+
+
+
+
+`global-fetch` allows us to override the normal fetch for our tet suite and instead allow us to provide our own JSON. 
+
+`fetch.mockResponseOnce(JSON.stringify({OBJECT}))`
+
+So let's see how out test now looks with all that information:
+
+```js
+
+```
+
+
+However, if you check the debug you'll notice that the data we fetched isn't being used. This starts to make sense when you consider it is a fetch request and they are asynchronous. We need a way to wait for the result to come back before proceeding. Handily enough, my next section is called...
+
+## Async Tests
 
 
 
