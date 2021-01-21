@@ -918,6 +918,20 @@ There are unfortunately lots of little gotchas you will hit as you start testing
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Don't be afraid of ... Testing Fetch requests in React
 
 In previous posts, I have been going over how to test common things we would do in React such as:
@@ -928,16 +942,24 @@ In previous posts, I have been going over how to test common things we would do 
 
 That is quite a few things in our testing toolbox. Now another common thing you might do in react is fetch data from a backend or external API. This can get a little hairy so I wanted to break it down and go slowly through it. In this post we will cover.
 
-- Mocking Fetch Requests
-- Async Tests
-- Loading States
-- 
+- Mocking APIs
+- Asynchronous Testing
+- Additional Information
 
-## Mocking Fetch Requests
+## Mocking APIs
 
 Now lets assume we have a Book component which fetches data from an external API when it provides an ID. 
 
-From previous posts we know how to provide props and variables to a test, so we could easily give the test an ID to then fetch from the external API. This is doable but perhaps not a good idea.
+From previous posts we know how to provide props and variables to a test, so we could easily give the test an ID to then fetch from the external API. This is doable but perhaps not a good idea. Still we need to setup that initial step of the fetch request as that is a param we pass in when using the book component:
+
+```js
+const match = {
+    params: {
+        id: 'abc1234567'
+    }
+}
+```
+
 
 We don't want to actually hit the API as that takes a little time to do and introduces a dependency to the API which makes it harder to reliably test.
 
@@ -947,23 +969,197 @@ Instead,  we want to make up a result we can use for the test. To make generatin
 
 Now, if this is something you are expecting to do a lot of, I recommend following the [setup steps provided](https://www.npmjs.com/package/jest-fetch-mock). For the sake of a punchy blog post we will do things quicker and dirtier.
 
+Once we have it installed we can override global fetch with our new package:
+
+`global-fetch = require('jest-fetch-mock')` allows us to override the normal fetch for our test suite and instead allow us to provide our own JSON.
 
 
+Now we have global fetch configured we need to perform the fetch in our test, here is an example, obviously we need to tailor it according to the fetch we would want to perform. Its a really common error for me to fail to replicate what is coming back from the fetch so its worth triple checking your mocked response is in the right format!: 
 
-`global-fetch` allows us to override the normal fetch for our tet suite and instead allow us to provide our own JSON. 
-
-`fetch.mockResponseOnce(JSON.stringify({OBJECT}))`
+```js
+fetch.mockResponseOnce(JSON.stringify({
+    title: "1984",
+    author: "George Orwell"
+}))
+```
 
 So let's see how out test now looks with all that information:
 
 ```js
+import React from 'react'
+import { render, cleanup } from 'react-testing-library'; 
+import Book from './Book';
+
+global.fetch = require('jest-fetch-mock'); // Makes the test use 'jest-fetch-mock
+
+afterEach( () => {
+    cleanup
+    console.error.mockClear()
+})
+
+console.error = jest.fn()
+
+const match = { //our params to grab the book info from the ID provided.
+    params: {
+        id: 'abc1234567'
+    }
+}
+
+test('<Book />' , () => {
+    fetch.mockResponseOnce(JSON.stringify({
+      title: "1984",
+      author: "George Orwell"
+    }))
+  const {debug}  = render(<Book match={match}/>)
+  debug()
+});
 
 ```
 
+We are not actually testing anything yet but that will come... first we have a little problem.
 
-However, if you check the debug you'll notice that the data we fetched isn't being used. This starts to make sense when you consider it is a fetch request and they are asynchronous. We need a way to wait for the result to come back before proceeding. Handily enough, my next section is called...
+If you check the debug (making sure to use the fetched data in some way in the book component) you'll notice that the data we fetched isn't being used. This starts to make sense when you consider it is a fetch request and they are asynchronous. We need a way to wait for the result to come back before proceeding. Handily enough, my next section is called...
 
-## Async Tests
+## Asynchronous Tests
+
+How do we get this data to show?
+
+`waitForElement` is some magic in React Testing Library that waits for the element to show up before proceeding. We grab it from React Testing Library like so:
+
+`import {render, cleanup, waitForElement} from 'react-testing-library`
+
+As with previous tests we need to define a target using a query such as *getByText*. But of course the problem is that we need to wait for that to exist on the page, to do that we need to make the test asynchronous. That is not as scary as it may sound as we can use the **async and await** syntax, like so..
+
+```js 
+test(<Book/>, async () => {
+
+  //other stuff
+
+  const book = getByText('1984') //This will NOT work as the element doesn't exist.
+  await waitForElement(() => getByText('1984')) //This waits for the element to exist so that...
+  expect(getByTestId('book-title').textContent).toBe('1984') //...this WILL work.
+})
+```
+
+And.... you should have the book data coming through in the debug view. A common issue is getting the mock fetch in the correct format your component is expecting. Let's have a look at the test in full:
+
+
+```js
+import React from 'react'
+import { render, cleanup, waitForElement, getAllByTestId} from 'react-testing-library'; 
+import Book from './Book';
+
+global.fetch = require('jest-fetch-mock');
+
+afterEach( () => {
+    cleanup
+    console.error.mockClear()
+})
+
+console.error = jest.fn()
+
+const match = {
+    params: {
+        id: 'abc1234567'
+    }
+}
+
+const book = {  //makes life easier as we can reference this in multiple places in the test.
+    title: "1984",
+    author: "George Orwell"
+}
+test('<Book />' , async () => {
+  fetch.mockResponseOnce(JSON.stringify(book))
+  const {getByTestId}  = render(<Book match={match}/>)
+  await waitForElement(() => getByTestId('book-title'))
+
+  expect(getByTestId('book-title').textContent).toBe(book.title)
+});
+```
+
+As for the JS, this is a snippet of how it might look like:
+
+```js
+class Book extends Component {
+  state = {
+    book: {},
+  }
+
+  async componentDidMount() { //Example API call
+    try {
+      const res = await fetch(`https://somebookapi.com`);
+      const book = await re,hs.json();
+      this.setState({
+        book,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  render() {
+    const { book } = this.state;
+    if(!book.title) return <h1 data-testid='loading'>Loading</h1>; //This check is important as it stops the element existing before it has the content from the API. You could add a test to check for this prior to the waitForElement.
+    return ( 
+      <h1 data-testid='book-title'>{book.title}</h1> //The element we are looking for
+      <h3>{book.author}</h3>
+    )
+  }
+}
+```
+
+Phew, there is a number of steps to getting it up and running but as long as you take it step by step and know the right react testing library magic you should get through it.
+
+As always this was just a look at one way of getting async tests to work, depending on what exactly you are doing there may be a better approach. The Jest docs has [good info](https://jestjs.io/docs/en/asynchronous) about several async methods. So I would give that a good read when you start thinking about it. 
+
+## Neater Testing with the __tests__ folder
+
+There is plenty you can test, and I have only covered a few testing angles for the sake of simplicity. Before you know it you will have test files everywhere and I haven't really mentioned a convention of how to organise them.
+
+For react apps I try and group components that related to a particular model, say Books. We don't have to have our tests sitting in the same folder as the component, there in a special folder `__tests__` where it is expected to place our tests. Remember that you need to update the component imports in the tests as well as any other components that rely on the moved files.
+
+
+## Code Coverage
+
+You may hear people that are really into testing say things like, "our app has 95% test coverage" which sounds pretty impressive but what do they mean? Lets see if we can work it out by checking our own coverage:
+
+`npm test --coverage`
+
+Will spit you out a table breaking down, on a component by component basis how much of your code is covered by a test, splitting it up by Statements, Branches, Functions and Lines.
+
+
+```html
+--------------------------|----------|----------|----------|----------|-------------------|
+File                      |  % Stmts | % Branch |  % Funcs |  % Lines | Uncovered Line #s |
+--------------------------|----------|----------|----------|----------|-------------------|
+All files                 |    46.07 |    19.35 |    46.67 |    60.66 |                   |
+ App.js                   |       50 |      100 |        0 |       50 |                13 |
+ Book.js                  |      100 |      100 |      100 |      100 |                   |
+ Book Form.js             |      100 |      100 |      100 |      100 |                   |
+ BooksList.js             |    90.91 |      100 |      100 |       90 |                22 |
+ NewBook.js               |      100 |      100 |      100 |      100 |                   |
+ index.js                 |        0 |        0 |        0 |        0 |     1,2,3,4,5,7,8 |
+ registerServiceWorker.js |        0 |        0 |        0 |        0 |... 25,126,127,128 |
+--------------------------|----------|----------|----------|----------|-------------------|
+```
+
+I wouldn't lose too much sleep over 'All Files' value as there is a bunch of files that you typically don't care for testing. 
+
+Code Coverage can point out testing gaps in the code but it does not say if the tests are actually good ones. Use it as a pointer where improvements might be needed but not as a score for how good your testing is.
+
+
+## That's a wrap
+
+Ok I have written a few amount of words with regards to testing and I feel like I have only scratched the surface! But hopefully how I picked it up is a good starting point in general.  There is much more the tools used can do with regards to testing so all I can say is to have the [Jest](https://jestjs.io/docs/en/getting-started) and [React Testing Library]((https://testing-library.com/docs/) docs handy when starting to build out your own tests and see what works best for you.
+
+
+
+
+
+
+
+
+
 
 
 
