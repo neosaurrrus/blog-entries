@@ -294,11 +294,43 @@ There are a whole bunch of Events and Elements you can specify. VSCode's intelli
 
 ## Dealing with Child Props
 
-Simple props are easy enough to plan for as we did earlier. But what about children of the component. For ecample, wjhat if we had a button with an image tag:
+Simple props are easy enough to plan for as we did earlier. But what about children of the component. For example, what if we had a button with an image tag:
 
 ```js
+   <Button 
+    onClick={(e) => {
+        e.preventDefault()
+        console.log("How is it going?")
+    }}>
+      <img alt="something" src="somewhere.png"/>
+    </Button>
 
 ```
+
+If its just a string, from a <H1> instead of an <IMG> we could just explicitly say the component has a child that returns a string:
+
+
+```js
+type Props = {
+    children: string,
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void; //Mouse Event  
+} 
+
+```
+
+However if we were using more complex or unknown children, this can start getting hard to manage in the props. This is where we have a little help in the form of refactoring our component to use`React.fc`:
+
+```js
+export const Button:React.FC<Props> = ({onClick}) => {
+    return (
+        <button onClick={onClick}>Hello!</button>
+    )
+}
+```
+
+This ensures the children of a component are correctly typed. Note how props is using the angled bracket syntax we used for events earlier. You will get an error if you use two sets of `:`.  It is fair to say however, that this pattern is [debated](https://fettblog.eu/typescript-react-why-i-dont-use-react-fc/) but this is how I tend to operate.
+
+
 
 
 
