@@ -239,7 +239,7 @@ export const Button = ({onClick}) => {
 />
 ```
 
-Linting rules for typescript will be pointing out that because we have not specified the output of the function, it is considered an *Any* type. This is not good typescripting so lets fix it up.
+Linting rules for typescript will b pointing out that because we have not specified the output of the function, it is considered an *Any* type. This is not good typescripting so lets fix it up.
 
 As we are not returning something we can use that mysterious `void` type, in a similar format to before.
 
@@ -256,11 +256,49 @@ export const Button = ({onClick}: Props) => {
 There is a bunch of ways we can define functions in TS but this is the most typical approach.
 
 
-## Events
+## Handling React Events in Typescript 
+
+Events, in this case reated to interacting with the component in some way. 
+
+In JS world we just specify `e` and off we go:
+
+```js
+const handleClick = (e) => {
+    //stuff
+}
+```
+
+In typescript it will complain that the event hasnt been specified so we can do something like this:
+
+```js
+type Props = {
+    onClick: (e: React.MouseEvent),
+    onChange: (e: React.ChangeEvent)
+    => void; //Mouse Event  
+} 
+```
+
+But this is just saying we have a mouseevent, Its good to be specific with typescript for it to offer the best advice as you code. So we can say especially it is, for example, a form element, or button element:
 
 
+```js
+type Props = {
+    onClick: (e: React.MouseEvent<HTMLButtonElement>),
+    onChange: (e: React.ChangeEvent<HTMLFormElement>)
+    => void; //Mouse Event  
+} 
+```
+
+There are a whole bunch of Events and Elements you can specify. VSCode's intellisense is a good way fo figuring out what you should reach for for a given event.
 
 
+## Dealing with Child Props
+
+Simple props are easy enough to plan for as we did earlier. But what about children of the component. For ecample, wjhat if we had a button with an image tag:
+
+```js
+
+```
 
 
 
