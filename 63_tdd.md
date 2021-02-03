@@ -642,7 +642,7 @@ We covered the basics of React Testing using React Testing Library. In order to 
 
 # Don't Be Afraid of ... Snapshot Testing and Mocking Forms and Props
 
-From our last post, we got introduced to React Testing via React Testing Library. For the sake of keeping things short and sweet we left out a few extra things to talk about. For that reason this post will be quite a mixture of things. In this post we will look at:
+From our [last post](https://dev.to/neosaurrrus/don-t-be-afraid-of-testing-react-with-react-testing-library-1k6j), we got introduced to React Testing via React Testing Library. For the sake of keeping things short and sweet we left out a few extra things to talk about. For that reason this post will be quite a mixture of things. In this post we will look at:
 
 - Snapshot Testing
 - Mocking a Form submission
@@ -651,7 +651,7 @@ From our last post, we got introduced to React Testing via React Testing Library
 
 ## Snapshot Testing.
 
-Snapshot testing sounds a bit like what it sounds like. If you took a photo of the result, did something then happen that makes it look different to that photo? Because we take the snapshot at a high-level on the component, typically the enclosing Div Snapshot testing lets us watch for changes across everything under that element. However, since Snapshot testing compares to a moment frozen in time, it works great for components that are static in nature, but ones with dynamic changeable elements, they may not be the best fit. Anyhow. let's look at implementing it
+Snapshot testing sounds a bit like what it sounds like. If you took a photo of the resulting code, did something then happen that makes it look different to that photo? Because we take the snapshot at a high-level on the component, typically the enclosing Div Snapshot testing lets us watch for changes across everything under that element. However, since Snapshot testing compares to a moment frozen in time, it works great for components that are static in nature, but ones with dynamic changeable elements, they may not be the best fit. Anyhow. let's look at implementing it
 
 
 ### Implementing Snapshot Testing
@@ -934,6 +934,9 @@ There are unfortunately lots of little gotchas you will hit as you start testing
 
 # Don't be afraid of ... Testing Fetch requests in React
 
+So this is more for my own reference as part of a series on testing.  since I picked up testing React, what I have learnt has become stale so I'd really recommend a browse of [Kent C.Dodds's post](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library) to really boost your testing game in React and avoid some of the common issues people do in testing... and I do here!
+
+
 In previous posts, I have been going over how to test common things we would do in React such as:
 
 - Component Elements
@@ -1150,7 +1153,7 @@ Code Coverage can point out testing gaps in the code but it does not say if the 
 
 ## That's a wrap
 
-Ok I have written a few amount of words with regards to testing and I feel like I have only scratched the surface! But hopefully how I picked it up is a good starting point in general.  There is much more the tools used can do with regards to testing so all I can say is to have the [Jest](https://jestjs.io/docs/en/getting-started) and [React Testing Library]((https://testing-library.com/docs/) docs handy when starting to build out your own tests and see what works best for you.
+Ok I have written a fair amount of words with regards to testing and I feel like I have only scratched the surface! Since writing this, this information is already getting superceded. But hopefully how I picked it up is a good starting point in general.  There is much more the tools used can do with regards to testing so all I can say is to have the [Jest](https://jestjs.io/docs/en/getting-started) and [React Testing Library]((https://testing-library.com/docs/) docs handy when starting to build out your own tests and see what works best for you.
 
 
 
