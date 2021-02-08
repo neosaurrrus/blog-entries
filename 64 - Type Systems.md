@@ -1,8 +1,19 @@
-# Introducing Typescript into React.
+
 
 I recently attended a webinar by Roy Derks and it inspired me to get into type systems since they are an awfully dry subject to try and get the concept and usefulness across.
 
-Type systems is getting more popular in the Javascript world with Typescript by far the most popular as we begin 2021. With React being pretty popular too, I wanted to get into Typescript in the world I am familiar with. And write about the landmines I step on along the way! By the eay, I am assuming you know a little bit about React but nothing about Typescript.
+Type systems is getting more popular in the Javascript world with Typescript by far the most popular as we begin 2021. With React being pretty popular with me, I wanted to get into Typescript via the world I am familiar with. And write about the landmines I step on along the way! By the way, I am assuming you know a little bit about React but nothing about Typescript.
+
+In this post I will look at:
+
+- What is Typescript
+- What Types are
+- Starting a  React App with Typescript support built in
+- Our first TSX Component, and Typescript error.
+- Common Types in Typescript
+- Examples in Functions, Events and Children
+
+The post ends fairly abruptly. As I often do, this is just a post to whet the appetite and get the ball rolling to get into things enough to research when using it for other things. Sound fair? Ok let's go...
 
 ## What is Typescript, how is it different to use  Javascript?
 
@@ -13,8 +24,6 @@ The nice thing about Typescript is that it has a compile step which turns it bac
 Having a compile step does mean that it has to be ran before your browser can make sense of it. If you have been using frameworks like React however, this shouldn't be an alien concept.
 
 Typescript files have a `.ts` extension as opposed to `js` in case you stumble across them. In React, components will use the `tsx` extension.
-
-
 
 ## Ok, sooo... whats the Type in Typescript all about?
 
@@ -36,19 +45,19 @@ Static typing allows us to catch errors much easily. If something is not defined
 
 There is more to TS than just that but lets keep it simple for now.
 
-## "OK, enough buildup lets get started with it"
+## "OK, lets get started with it"
 
-Well this is the point of this series of blog posts. Lets get started with installing create-react-app with typescript installed.
+Lets get started with installing create-react-app with typescript installed.
 
 `npx create-react-app my-app --template typescript`
 
 If you already have a an existing create-react-app app you want to convert to use typescript you can see see the relavent [create react app guide](https://create-react-app.dev/docs/adding-typescript/)
 
-If you rolled your React app without CRA, then there is so many variables I wouldn't know how best to get on board I am afraid.
+If you rolled your React app without Create-React-App, then there are too many possibilities to advise.
 
-Anyhow after a fresh new CRA, you will notice that the typical starter JS files `Index` and `App` now have the tsx extension. You will also see some other new TS files. Its slightly disturbing seeing something familiar slightly weird but we will get there.
+Anyhow after a fresh new Create-React-App, you will notice that the typical starter JS files `Index` and `App` now have the tsx extension. You will also see some other new TS files. Its slightly disturbing seeing something familiar become slightly weird but we will get there../
 
-It's important to note, it will still allow us to use regular JS components if we wanted or if you have old components you want to migrate to TS later. If you check the `tsconfig.json` in the root of the application, there is an option to change this called 'allowJs'. As I said earlier, once you have Typescript setup it doesn't mean you have to always use it... but yeah, this would be a pointless blog post if I didn't! If you are converting JS files to JSX files you may need to restart the server to get react to realise it.
+It's important to note, it will still allow us to use regular JS components if we wanted to (say, if you have old components you want to migrate to TS later). If you check the `tsconfig.json` in the root of the application, there is an option to change this called 'allowJs'. As I said earlier, once you have Typescript setup it doesn't mean you have to always use it... but yeah, this would be a pointless blog post if I didn't! If you are converting JS files to JSX files you may need to restart the server to get react to realise it.
 
 
 Speaking of which, you can start the server as you would any create-react-app with a `npm start` or `yarn start` depending on which one you like using.
@@ -208,7 +217,7 @@ Which is cool.
 
 **Unknown** is what it says, when we don't know what it is. If its something provided by the user for example. We should probably know what the vast majority of our inputs are if we are coding them ourselves!
 
-**Any** is any type, and effectively is doing what JS has been doing. Why use it? Sometimes it might geniunely be needed, or as part of a hybrid TS/JS/3rd party library situation. Just try not to lean on it too much!
+**Any** is any type, and effectively is doing what JS has been doing. Why use it? Sometimes it might genuinely be needed, or as part of a hybrid TS/JS/3rd party library situation. Just try not to lean on it too much!
 
 **Void** is like the opposite of any. It wont have any type. This is typically used in functions more to state where it wont be returning anything explicitly.
 
@@ -329,6 +338,13 @@ export const Button:React.FC<Props> = ({onClick}) => {
 ```
 
 This ensures the children of a component are correctly typed. Note how props is using the angled bracket syntax we used for events earlier. You will get an error if you use two sets of `:`.  It is fair to say however, that this pattern is [debated](https://fettblog.eu/typescript-react-why-i-dont-use-react-fc/) but this is how I tend to operate.
+
+
+## Wrap Up
+
+This post was supposed to be a quick look at how to get started with Typescript with React and what you might commonly find in your initial steps with it. Hope it has helped. 
+
+As for Typescript itself. Definitely consider picking it up if you are using React. Having a build process is something you are already familiar with and, while it is a little extra typing (no pun intended) It helps avoid issues later down the line when they are much harder to spot. The main takeaway here is that even a little typescript seasoning can be an tasty benefit to your apps even if you don't know all the ins and outs of it. And hopefully it gives you a taste for learning more!
 
 
 
