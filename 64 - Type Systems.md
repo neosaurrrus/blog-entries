@@ -267,7 +267,7 @@ There is a bunch of ways we can define functions in TS but this is the most typi
 
 ## Handling React Events in Typescript 
 
-Events, in this case reated to interacting with the component in some way. 
+Events, in this case reacted to interacting with the component in some way. 
 
 In JS world we just specify `e` and off we go:
 
